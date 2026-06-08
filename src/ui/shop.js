@@ -4,7 +4,7 @@
    ticker so it completes even off this tab). Any owned card is sellable,
    including the last copy. */
 
-import { state, sellableCards, listForSale, processSales, claimDaily } from '../state/store.js';
+import { state, sellableCards, listForSale, processSales, claimDaily, isLocked } from '../state/store.js';
 import { sellValue, sellDurationMs, dailyCooldownRemaining, formatCooldown, DAILY_REWARD } from '../game/economy.js';
 import { formatPrice } from '../services/prices.js';
 import { playCoin, playClick } from '../services/audio.js';
@@ -28,6 +28,10 @@ export function initShop() {
   dupesEl.addEventListener('click', e => {
     const card = e.target.closest('.dupe-card');
     if (!card) return;
+    if (isLocked(card.dataset.uid)) {
+      toast('Locked', 'Unlock this card in the Binder before selling.');
+      return;
+    }
     const sale = listForSale(card.dataset.uid, Date.now());
     if (sale) { playClick(); toast('Listed', `${sale.card.name} — selling for ${formatPrice(sale.value)}…`); }
     renderShop();
@@ -102,14 +106,16 @@ function renderSellable() {
 
   dupesEl.innerHTML = owned.map(e => {
     const c = e.card;
+    const locked = isLocked(c.uid);
     return `
-      <div class="dupe-card" data-rarity="${c.tier}" data-uid="${c.uid}" title="Sell one ${c.name} (${c.setName} #${c.number}) · ~${(sellDurationMs(c) / 1000)}s to sell">
+      <div class="dupe-card${locked ? ' locked-card' : ''}" data-rarity="${c.tier}" data-uid="${c.uid}" title="${locked ? 'Locked — unlock in the Binder to sell' : `Sell one ${c.name} (${c.setName} #${c.number}) · ~${(sellDurationMs(c) / 1000)}s to sell`}">
         ${e.count > 1 ? `<div class="count-badge">x${e.count}</div>` : ''}
+        ${locked ? `<div class="lock-badge">🔒</div>` : ''}
         ${c.isReverse ? `<div class="variant-badge mini">RV</div>` : ''}
         <div class="mini-art">
           <img src="${c.image}" alt="${c.name}" loading="lazy" onerror="this.classList.add('img-fail')">
         </div>
-        <div class="sell-tag">+${formatPrice(sellValue(c))}</div>
+        <div class="sell-tag">${locked ? 'locked' : '+' + formatPrice(sellValue(c))}</div>
       </div>
     `;
   }).join('');

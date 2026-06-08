@@ -97,6 +97,27 @@ export const SETS = [
       '--pack-c1': '#b829ff', '--pack-c2': '#ffd700', '--pack-c3': '#ff2e9a', '--pack-c4': '#00f0ff',
     },
   },
+  {
+    id: 'fossil',
+    apiSetId: 'base3',
+    name: 'Fossil',
+    blurb: 'Vintage 1999. Premium. Holo Articuno / Aerodactyl / Lapras chase.',
+    cost: 35,
+    cooldownMs: 0,
+    pack: {
+      // vintage packs had no reverse-holo slot; 7 commons/uncommons + 1 rare slot.
+      slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'uncommon', 'rare-slot'],
+      // Fossil only has rare + rare-holo as hits (no ultra/secret tiers exist).
+      rareSlot: [
+        { tier: 'rare', w: 72 },
+        { tier: 'holo', w: 28 },
+      ],
+    },
+    theme: {
+      '--accent': '#e0a93f', '--accent-glow': 'rgba(224,169,63,0.5)',
+      '--pack-c1': '#d9b061', '--pack-c2': '#8a6d4b', '--pack-c3': '#3fb6a8', '--pack-c4': '#d9b061',
+    },
+  },
 ];
 
 export function getSet(id) {

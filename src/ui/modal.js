@@ -2,7 +2,7 @@
    owned count, and a wishlist toggle. */
 
 import { formatPrice } from '../services/prices.js';
-import { state, isWished, toggleWishlist } from '../state/store.js';
+import { state, isWished, toggleWishlist, isLocked, toggleLock } from '../state/store.js';
 import { playClick } from '../services/audio.js';
 
 let backdrop, modal, currentUid = null;
@@ -23,6 +23,7 @@ export function showCard(card) {
   currentUid = card.uid;
   const owned = state.binder[card.uid]?.count || 0;
   const wished = isWished(card.uid);
+  const locked = isLocked(card.uid);
 
   modal.innerHTML = `
     <button class="modal-close" aria-label="close">×</button>
@@ -41,6 +42,9 @@ export function showCard(card) {
       <button class="btn ${wished ? 'success' : ''}" id="modal-wish-btn">
         ${wished ? '★ On Wishlist' : '☆ Add to Wishlist'}
       </button>
+      <button class="btn ${locked ? 'primary' : ''}" id="modal-lock-btn">
+        ${locked ? '🔒 Locked' : '🔓 Lock'}
+      </button>
     </div>
   `;
 
@@ -48,6 +52,11 @@ export function showCard(card) {
   modal.querySelector('#modal-wish-btn').addEventListener('click', () => {
     playClick();
     toggleWishlist(card.uid);
+    showCard(card);
+  });
+  modal.querySelector('#modal-lock-btn').addEventListener('click', () => {
+    playClick();
+    toggleLock(card.uid);
     showCard(card);
   });
 

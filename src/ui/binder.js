@@ -2,7 +2,7 @@
    Rarity/wishlist filters, text search, several sort orders, and a detail modal
    on click. Entries are keyed by card uid (a specific printing). */
 
-import { state, isWished } from '../state/store.js';
+import { state, isWished, isLocked } from '../state/store.js';
 import { formatPrice } from '../services/prices.js';
 import { showCard } from './modal.js';
 
@@ -60,6 +60,7 @@ export function renderBinder() {
     return `
       <div class="mini-card" data-rarity="${c.tier}" data-uid="${c.uid}" title="${c.name} · ${c.rarity} · ${c.setName} #${c.number}">
         ${isWished(c.uid) ? `<div class="wish-badge">★</div>` : ''}
+        ${isLocked(c.uid) ? `<div class="lock-badge">🔒</div>` : ''}
         ${e.count > 1 ? `<div class="count-badge">x${e.count}</div>` : ''}
         ${c.isReverse ? `<div class="variant-badge mini">RV</div>` : ''}
         <div class="mini-art">

@@ -836,6 +836,20 @@ header {
   filter: drop-shadow(0 0 4px rgba(255,242,0,0.8));
 }
 
+.lock-badge {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  font-size: 0.7rem;
+  z-index: 3;
+  filter: drop-shadow(0 0 4px rgba(0,0,0,0.9));
+}
+
+/* A locked card in the shop can't be sold — dim it and disable the hover. */
+.dupe-card.locked-card { opacity: 0.55; cursor: not-allowed; }
+.dupe-card.locked-card:hover { transform: none; box-shadow: none; }
+.dupe-card.locked-card .sell-tag { color: var(--muted); }
+
 .price-tag {
   margin-top: 2px;
   text-align: center;

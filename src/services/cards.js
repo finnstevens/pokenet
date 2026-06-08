@@ -32,6 +32,7 @@ export function rarityToTier(rarityStr) {
   if (s.includes('ace spec')) return 'ultra';
   if (s.includes('ultra')) return 'ultra';
   if (s.includes('double')) return 'holo';
+  if (s.includes('holo')) return 'holo';           // vintage "Rare Holo"
   if (s.includes('uncommon')) return 'uncommon';
   if (s.includes('rare')) return 'rare';
   if (s.includes('common')) return 'common';
@@ -44,8 +45,8 @@ export function rarityToTier(rarityStr) {
    overprice an ordinary pull. Holo/ultra/secret cards use their foil price.
    (A card pulled in the reverse-holo slot is re-priced to reverseHolofoil in
    game/packs.js — there the premium is correct.) */
-const FOIL_FIRST = ['holofoil', '1stEditionHolofoil', 'unlimitedHolofoil', 'reverseHolofoil', 'normal', 'unlimited', '1stEditionNormal'];
-const BASE_FIRST = ['normal', 'unlimited', '1stEditionNormal', 'reverseHolofoil', 'holofoil', '1stEditionHolofoil', 'unlimitedHolofoil'];
+const FOIL_FIRST = ['holofoil', 'unlimitedHolofoil', '1stEditionHolofoil', 'reverseHolofoil', 'normal', 'unlimited', '1stEditionNormal'];
+const BASE_FIRST = ['normal', 'unlimited', '1stEditionNormal', 'reverseHolofoil', 'holofoil', 'unlimitedHolofoil', '1stEditionHolofoil'];
 const FOIL_TIERS = new Set(['holo', 'ultra', 'secret']);
 
 function bestVariantPrice(prices, tier) {

@@ -20,6 +20,7 @@ function freshState() {
     binder: {},          // uid -> { card, count }
     pendingSales: [],    // [{ id, card, value, listedAt, readyAt }]
     wishlist: [],        // [uid]
+    locked: [],          // [uid] — protected from selling
     achievements: [],    // [achievementId]
     lastDailyClaim: null,
     lastOpen: {},        // setId -> timestamp (for cooldown-gated sets)
@@ -36,7 +37,7 @@ export const state = freshState();
 
 /* ---- persistence ---- */
 const PERSIST_KEYS = [
-  'money', 'packsOpened', 'totalCards', 'binder', 'pendingSales', 'wishlist',
+  'money', 'packsOpened', 'totalCards', 'binder', 'pendingSales', 'wishlist', 'locked',
   'achievements', 'lastDailyClaim', 'lastOpen', 'selectedSet', 'currentFilter', 'sort',
 ];
 
@@ -132,6 +133,7 @@ export function addMoney(n) {
 export function listForSale(uid, now) {
   const entry = state.binder[uid];
   if (!entry || entry.count < 1) return null;
+  if (state.locked.includes(uid)) return null; // protected from selling
   const card = entry.card;
   entry.count--;
   if (entry.count <= 0) delete state.binder[uid];
@@ -178,6 +180,14 @@ export function toggleWishlist(uid) {
   commit();
 }
 export function isWished(uid) { return state.wishlist.includes(uid); }
+
+export function toggleLock(uid) {
+  const i = state.locked.indexOf(uid);
+  if (i >= 0) state.locked.splice(i, 1);
+  else state.locked.push(uid);
+  commit();
+}
+export function isLocked(uid) { return state.locked.includes(uid); }
 
 export function setSelectedSet(id) { state.selectedSet = id; commit(); }
 export function setFilter(f)       { state.currentFilter = f; commit(); }

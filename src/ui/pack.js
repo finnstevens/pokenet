@@ -16,6 +16,7 @@ import * as sfx from '../services/audio.js';
 
 let $pack, $hint, $reveal, $actions, $picker, $big, $small, $tiny, $btnNew, $btnFlip;
 let revealing = false; // true while cards are shown (pack hidden)
+let pendingAchievements = []; // held until the player flips the cards, so toasts don't spoil the pull
 
 export function initPack() {
   $pack    = document.getElementById('pack');
@@ -36,6 +37,7 @@ export function initPack() {
       c.classList.add('flipped');
       sfx.playFlip();
     });
+    maybeFlushAchievements();
   });
 
   $picker.addEventListener('click', e => {
@@ -160,7 +162,7 @@ function openPack() {
       const best = bestRarity(pack);
       sfx.playFanfare(best);
       celebrate(best);
-      unlocked.forEach(a => toast('Achievement: ' + a.title, a.desc));
+      pendingAchievements = unlocked; // hold toasts until the cards are flipped
     }, 600);
   }, 1500);
 }
@@ -176,6 +178,7 @@ function renderPack(pack) {
       if (!el.classList.contains('flipped')) {
         el.classList.add('flipped');
         sfx.playFlip();
+        maybeFlushAchievements();
       }
     });
     $reveal.appendChild(el);
@@ -184,8 +187,20 @@ function renderPack(pack) {
   renderStats();
 }
 
+/* Show held achievement toasts only once every card is flipped, so they don't
+   reveal a big pull before the player turns the cards over. */
+function maybeFlushAchievements() {
+  if (!pendingAchievements.length) return;
+  const cards = $reveal.querySelectorAll('.card');
+  const allFlipped = cards.length > 0 && [...cards].every(c => c.classList.contains('flipped'));
+  if (!allFlipped) return;
+  pendingAchievements.forEach(a => toast('Achievement: ' + a.title, a.desc));
+  pendingAchievements = [];
+}
+
 function resetForNewPack() {
   revealing = false;
+  pendingAchievements = []; // achievement is already saved; drop any unshown toast
   $reveal.classList.remove('show');
   $reveal.innerHTML = '';
   $actions.style.display = 'none';
