@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POKÉPACK // booster simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Mono:wght@400;700&family=Bungee&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./styles/styles.css">
+</head>
+<body>
+
+<canvas id="fx-canvas"></canvas>
+<div class="screen-flash" id="screen-flash"></div>
+
+<div class="wrap">
+  <header>
+    <h1 class="logo">POKÉPACK<span>// booster simulator v2.0</span></h1>
+    <p class="sub">/// rip · reveal · repeat ///</p>
+  </header>
+
+  <div class="stats" id="stats">
+    <div class="stat currency">
+      <div class="stat-label">MONEY</div>
+      <div class="stat-val" id="stat-money">$0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">PACKS</div>
+      <div class="stat-val" id="stat-packs">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">CARDS</div>
+      <div class="stat-val" id="stat-cards">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">UNIQUE</div>
+      <div class="stat-val" id="stat-unique">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">SECRETS</div>
+      <div class="stat-val" id="stat-secrets">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">VALUE</div>
+      <div class="stat-val" id="stat-value">$0</div>
+    </div>
+  </div>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-tab="open">Open</button>
+    <button class="tab" data-tab="binder">Binder</button>
+    <button class="tab" data-tab="shop">Shop</button>
+  </nav>
+
+  <!-- OPEN VIEW -->
+  <section class="view active" id="view-open">
+    <div class="pack-picker" id="pack-picker"></div>
+
+    <div class="pack-stage">
+      <div class="pack" id="pack" role="button" aria-label="Open booster pack">
+        <div class="pack-body"></div>
+        <div class="pack-tear"></div>
+        <div class="pack-label">
+          <span class="big" id="pack-big">BOOSTER</span>
+          <span class="small" id="pack-small">NEON EDITION</span>
+          <span class="tiny" id="pack-tiny">5 CARDS / 1 RARE+</span>
+        </div>
+      </div>
+      <p class="hint" id="hint">▼ CLICK PACK TO OPEN ▼</p>
+      <div class="cards-reveal" id="reveal"></div>
+      <div class="actions" id="actions" style="display:none;">
+        <button class="btn primary" id="btn-new">Open Another</button>
+        <button class="btn" id="btn-flip-all">Reveal All</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- BINDER VIEW -->
+  <section class="view" id="view-binder">
+    <div class="binder-head">
+      <h2 class="section-title">// Your Binder</h2>
+      <div class="filters" id="filters">
+        <button class="filter active" data-filter="all">All</button>
+        <button class="filter" data-filter="common">Common</button>
+        <button class="filter" data-filter="uncommon">Uncommon</button>
+        <button class="filter" data-filter="rare">Rare</button>
+        <button class="filter" data-filter="holo">Holo</button>
+        <button class="filter" data-filter="ultra">Ultra</button>
+        <button class="filter" data-filter="secret">Secret</button>
+        <button class="filter" data-filter="wishlist">★ Wishlist</button>
+      </div>
+    </div>
+    <div class="binder-controls">
+      <input type="text" class="search-box" id="search" placeholder="search by name…" autocomplete="off">
+      <select class="sort-select" id="sort">
+        <option value="rarity">Sort: Rarity</option>
+        <option value="name">Sort: Name</option>
+        <option value="value">Sort: Value</option>
+        <option value="count">Sort: Owned</option>
+        <option value="dex">Sort: Set & №</option>
+      </select>
+    </div>
+    <p style="font-family:'Press Start 2P',monospace;font-size:0.5rem;color:var(--muted);letter-spacing:0.15em;margin-bottom:18px;opacity:0.7;">
+      ▸ market prices via pokemontcg.io · tcgplayer data · indicative only · click a card for details
+    </p>
+    <div class="binder-grid" id="binder">
+      <div class="empty">No cards yet. Rip a pack to start collecting.</div>
+    </div>
+  </section>
+
+  <!-- SHOP VIEW -->
+  <section class="view" id="view-shop">
+    <h2 class="section-title" style="margin-bottom:20px;">// Shop</h2>
+
+    <div class="shop-section">
+      <h3>Daily Reward</h3>
+      <div class="daily-claim" id="daily-claim"></div>
+    </div>
+
+    <div class="shop-section" id="selling-section" style="display:none;">
+      <h3>On the Market</h3>
+      <p style="color:var(--muted);font-size:0.78rem;letter-spacing:0.05em;margin-bottom:16px;">
+        Listed cards sell after a short time, then pay out automatically.
+      </p>
+      <div class="dupes-grid" id="selling"></div>
+    </div>
+
+    <div class="shop-section">
+      <h3>Sell Cards</h3>
+      <p style="color:var(--muted);font-size:0.78rem;letter-spacing:0.05em;margin-bottom:16px;">
+        Click any card to list one copy for sale at its market value (minus a haircut). Selling your last copy removes it.
+      </p>
+      <div class="dupes-grid" id="dupes">
+        <div class="empty">No cards to sell yet.</div>
+      </div>
+    </div>
+  </section>
+
+  <footer>© POKÉPACK SIM · NOT AFFILIATED WITH NINTENDO</footer>
+</div>
+
+<!-- Modal root -->
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal" id="modal"></div>
+</div>
+
+<!-- Toast root -->
+<div class="toast-stack" id="toast-stack"></div>
+
+<script type="module" src="./src/main.js"></script>
+
+</body>
+</html>

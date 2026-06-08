@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POKÉPACK // booster simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Mono:wght@400;700&family=Bungee&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a1a;
+    --bg-2: #1a0b2e;
+    --neon-pink: #ff2e9a;
+    --neon-cyan: #00f0ff;
+    --neon-yellow: #fff200;
+    --neon-purple: #b829ff;
+    --neon-green: #39ff14;
+    --ink: #e9e6ff;
+    --muted: #8b88b3;
+
+    /* rarity palette */
+    --r-common: #b8b8c8;
+    --r-uncommon: #2ecc71;
+    --r-rare: #3498db;
+    --r-holo: #e91e63;
+    --r-ultra: #ffd700;
+    --r-secret: #ff00e6;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    min-height: 100vh;
+    font-family: 'Space Mono', monospace;
+    color: var(--ink);
+    background:
+      radial-gradient(ellipse at top left, rgba(255,46,154,0.18), transparent 60%),
+      radial-gradient(ellipse at bottom right, rgba(0,240,255,0.18), transparent 60%),
+      linear-gradient(180deg, #0a0a1a 0%, #1a0b2e 100%);
+    background-attachment: fixed;
+    overflow-x: hidden;
+  }
+
+  /* scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(255,255,255,0.02) 0,
+      rgba(255,255,255,0.02) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    z-index: 1000;
+  }
+
+  /* grid floor */
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40vh;
+    background:
+      linear-gradient(180deg, transparent 0%, rgba(255,46,154,0.08) 100%),
+      linear-gradient(90deg, transparent 49.5%, rgba(0,240,255,0.3) 50%, transparent 50.5%) 0 0/60px 60px,
+      linear-gradient(0deg, transparent 49.5%, rgba(0,240,255,0.3) 50%, transparent 50.5%) 0 0/60px 60px;
+    transform: perspective(400px) rotateX(60deg);
+    transform-origin: bottom;
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  .wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    position: relative;
+    z-index: 2;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 50px;
+    animation: dropIn 0.8s cubic-bezier(.2,.8,.2,1) backwards;
+  }
+
+  .logo {
+    font-family: 'Bungee', sans-serif;
+    font-size: clamp(2.4rem, 6vw, 4.5rem);
+    letter-spacing: 0.05em;
+    background: linear-gradient(180deg, var(--neon-yellow) 0%, var(--neon-pink) 60%, var(--neon-purple) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-stroke: 2px rgba(0,0,0,0.3);
+    text-shadow:
+      0 0 30px rgba(255,46,154,0.6),
+      0 0 60px rgba(184,41,255,0.4);
+    line-height: 0.95;
+  }
+
+  .logo span {
+    display: block;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.4em;
+    color: var(--neon-cyan);
+    -webkit-text-stroke: 0;
+    background: none;
+    -webkit-background-clip: initial;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 8px var(--neon-cyan);
+    margin-top: 12px;
+  }
+
+  .sub {
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* Stats bar */
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 40px;
+  }
+
+  .stat {
+    background: rgba(10, 10, 26, 0.7);
+    border: 1px solid rgba(255,46,154,0.3);
+    backdrop-filter: blur(8px);
+    padding: 14px 22px;
+    min-width: 130px;
+    text-align: center;
+    position: relative;
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  }
+
+  .stat-label {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.55rem;
+    color: var(--neon-cyan);
+    letter-spacing: 0.15em;
+    margin-bottom: 6px;
+  }
+
+  .stat-val {
+    font-family: 'Bungee', sans-serif;
+    font-size: 1.5rem;
+    color: var(--neon-yellow);
+    text-shadow: 0 0 12px rgba(255,242,0,0.5);
+  }
+
+  /* Pack area */
+  .pack-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 460px;
+    margin-bottom: 40px;
+    position: relative;
+  }
+
+  .pack {
+    width: 220px;
+    height: 380px;
+    position: relative;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: transform 0.4s cubic-bezier(.2,.8,.2,1);
+    animation: float 4s ease-in-out infinite;
+  }
+
+  .pack:hover { transform: scale(1.05) rotateY(8deg); }
+  .pack.opening { animation: shake 0.5s ease-in-out 3; pointer-events: none; }
+  .pack.torn { animation: tearAway 0.7s forwards ease-in; pointer-events: none; }
+
+  .pack-body {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(135deg,
+        #ff2e9a 0%,
+        #ffd700 25%,
+        #00f0ff 50%,
+        #b829ff 75%,
+        #ff2e9a 100%);
+    background-size: 200% 200%;
+    border-radius: 8px;
+    box-shadow:
+      0 0 40px rgba(255,46,154,0.5),
+      0 0 80px rgba(184,41,255,0.3),
+      inset 0 0 60px rgba(0,0,0,0.2);
+    animation: holoShift 3s linear infinite;
+    overflow: hidden;
+    border: 3px solid rgba(255,255,255,0.6);
+  }
+
+  .pack-body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-linear-gradient(45deg,
+        rgba(255,255,255,0.1) 0,
+        rgba(255,255,255,0.1) 2px,
+        transparent 2px,
+        transparent 10px);
+    mix-blend-mode: overlay;
+  }
+
+  .pack-body::after {
+    content: '';
+    position: absolute;
+    inset: 12px;
+    border: 2px dashed rgba(255,255,255,0.4);
+    border-radius: 4px;
+  }
+
+  .pack-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Bungee', sans-serif;
+    color: #fff;
+    text-align: center;
+    text-shadow:
+      2px 2px 0 rgba(0,0,0,0.4),
+      0 0 20px rgba(255,255,255,0.8);
+    z-index: 2;
+    pointer-events: none;
+    width: 90%;
+  }
+
+  .pack-label .big {
+    display: block;
+    font-size: 2.2rem;
+    line-height: 0.9;
+    letter-spacing: 0.02em;
+  }
+
+  .pack-label .small {
+    display: block;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.55rem;
+    margin-top: 14px;
+    letter-spacing: 0.3em;
+    color: var(--neon-yellow);
+  }
+
+  .pack-label .tiny {
+    display: block;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.7rem;
+    margin-top: 18px;
+    letter-spacing: 0.1em;
+    opacity: 0.9;
+  }
+
+  .pack-tear {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: rgba(0,0,0,0.3);
+    border-bottom: 2px dashed rgba(255,255,255,0.6);
+    z-index: 3;
+  }
+
+  /* Hint */
+  .hint {
+    margin-top: 24px;
+    color: var(--muted);
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  /* Cards reveal */
+  .cards-reveal {
+    display: none;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 18px;
+    margin-top: 30px;
+    width: 100%;
+    max-width: 950px;
+  }
+
+  .cards-reveal.show { display: grid; }
+
+  .card {
+    aspect-ratio: 5 / 7;
+    position: relative;
+    transform-style: preserve-3d;
+    cursor: pointer;
+    transition: transform 0.7s cubic-bezier(.2,.8,.2,1);
+    animation: cardFlyIn 0.6s cubic-bezier(.2,.8,.2,1) backwards;
+  }
+
+  .card:nth-child(1) { animation-delay: 0s; }
+  .card:nth-child(2) { animation-delay: 0.15s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+  .card:nth-child(4) { animation-delay: 0.45s; }
+  .card:nth-child(5) { animation-delay: 0.6s; }
+
+  .card.flipped { transform: rotateY(180deg); }
+  .card:not(.flipped):hover { transform: translateY(-6px); }
+  .card.flipped:hover { transform: rotateY(180deg) translateY(-6px); }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .face-back {
+    background:
+      radial-gradient(circle at 30% 30%, rgba(255,46,154,0.6), transparent 50%),
+      radial-gradient(circle at 70% 70%, rgba(0,240,255,0.5), transparent 50%),
+      linear-gradient(135deg, #1a0b2e, #0a0a1a);
+    border: 2px solid rgba(255,46,154,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 20px rgba(255,46,154,0.4);
+  }
+
+  .face-back::before {
+    content: '?';
+    font-family: 'Bungee', sans-serif;
+    font-size: 4rem;
+    background: linear-gradient(180deg, var(--neon-yellow), var(--neon-pink));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 20px rgba(255,242,0,0.5);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .face-front {
+    transform: rotateY(180deg);
+    background: #fff;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    border: 3px solid;
+  }
+
+  .card[data-rarity="common"] .face-front { border-color: var(--r-common); }
+  .card[data-rarity="uncommon"] .face-front { border-color: var(--r-uncommon); }
+  .card[data-rarity="rare"] .face-front { border-color: var(--r-rare); }
+  .card[data-rarity="holo"] .face-front {
+    border-color: var(--r-holo);
+    box-shadow: 0 0 24px rgba(233,30,99,0.6);
+  }
+  .card[data-rarity="ultra"] .face-front {
+    border-color: var(--r-ultra);
+    box-shadow: 0 0 28px rgba(255,215,0,0.7);
+  }
+  .card[data-rarity="secret"] .face-front {
+    border-color: var(--r-secret);
+    box-shadow: 0 0 36px rgba(255,0,230,0.8), 0 0 60px rgba(184,41,255,0.5);
+  }
+
+  /* holographic shine for rare+ */
+  .card[data-rarity="holo"] .face-front::before,
+  .card[data-rarity="ultra"] .face-front::before,
+  .card[data-rarity="secret"] .face-front::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg,
+      transparent 25%,
+      rgba(255,255,255,0.4) 50%,
+      transparent 75%);
+    background-size: 200% 200%;
+    animation: holoSweep 3s linear infinite;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    z-index: 5;
+  }
+
+  .card[data-rarity="ultra"] .face-front::after,
+  .card[data-rarity="secret"] .face-front::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-conic-gradient(
+        from 0deg at 50% 50%,
+        rgba(255,46,154,0.15) 0deg,
+        rgba(255,242,0,0.15) 60deg,
+        rgba(0,240,255,0.15) 120deg,
+        rgba(184,41,255,0.15) 180deg);
+    mix-blend-mode: color-dodge;
+    pointer-events: none;
+    animation: rotateBG 8s linear infinite;
+    z-index: 4;
+  }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 6px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #2c2c3a;
+    background: linear-gradient(90deg, #f4f1e8, #e8e3d5);
+    border-radius: 4px;
+    margin-bottom: 4px;
+    z-index: 2;
+    position: relative;
+  }
+
+  .card-hp { color: #c0392b; font-family: 'Bungee', sans-serif; }
+
+  .card-art {
+    flex: 1;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    z-index: 2;
+  }
+
+  .card-art img {
+    width: 92%;
+    height: 92%;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.35));
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+
+  /* Pixel-art sprites (used for common/uncommon) look better scaled up sharp */
+  .card[data-rarity="common"] .card-art img,
+  .card[data-rarity="uncommon"] .card-art img {
+    image-rendering: pixelated;
+    width: 78%;
+    height: 78%;
+  }
+
+  .type-grass { background: linear-gradient(135deg, #8bc34a, #388e3c); }
+  .type-fire { background: linear-gradient(135deg, #ff7043, #d84315); }
+  .type-water { background: linear-gradient(135deg, #29b6f6, #0277bd); }
+  .type-electric { background: linear-gradient(135deg, #ffd54f, #f57f17); }
+  .type-psychic { background: linear-gradient(135deg, #ba68c8, #6a1b9a); }
+  .type-fighting { background: linear-gradient(135deg, #a1887f, #4e342e); }
+  .type-dark { background: linear-gradient(135deg, #546e7a, #263238); }
+  .type-dragon { background: linear-gradient(135deg, #ffa726, #e65100); }
+  .type-normal { background: linear-gradient(135deg, #bdbdbd, #616161); }
+
+  .card-name {
+    margin-top: 6px;
+    padding: 4px 6px;
+    background: linear-gradient(90deg, #f4f1e8, #e8e3d5);
+    border-radius: 4px;
+    font-family: 'Bungee', sans-serif;
+    font-size: 0.75rem;
+    color: #2c2c3a;
+    text-align: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    z-index: 2;
+    position: relative;
+  }
+
+  .card-footer {
+    margin-top: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 4px;
+    font-size: 0.55rem;
+    color: #2c2c3a;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    z-index: 2;
+    position: relative;
+  }
+
+  .rarity-badge {
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: #fff;
+    font-size: 0.5rem;
+    letter-spacing: 0.1em;
+  }
+
+  .card[data-rarity="common"] .rarity-badge { background: var(--r-common); }
+  .card[data-rarity="uncommon"] .rarity-badge { background: var(--r-uncommon); }
+  .card[data-rarity="rare"] .rarity-badge { background: var(--r-rare); }
+  .card[data-rarity="holo"] .rarity-badge { background: var(--r-holo); }
+  .card[data-rarity="ultra"] .rarity-badge { background: linear-gradient(90deg, #ff8a00, #ffd700); color: #2c2c3a; }
+  .card[data-rarity="secret"] .rarity-badge { background: linear-gradient(90deg, #ff00e6, #b829ff); }
+
+  /* Action bar */
+  .actions {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    margin-top: 32px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.7rem;
+    padding: 16px 24px;
+    border: 2px solid var(--neon-cyan);
+    background: rgba(0,240,255,0.08);
+    color: var(--neon-cyan);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  }
+
+  .btn:hover {
+    background: var(--neon-cyan);
+    color: var(--bg);
+    box-shadow: 0 0 30px rgba(0,240,255,0.6);
+    transform: translateY(-2px);
+  }
+
+  .btn.primary {
+    border-color: var(--neon-pink);
+    background: rgba(255,46,154,0.1);
+    color: var(--neon-pink);
+  }
+
+  .btn.primary:hover {
+    background: var(--neon-pink);
+    color: #fff;
+    box-shadow: 0 0 30px rgba(255,46,154,0.7);
+  }
+
+  .btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Binder */
+  .binder {
+    margin-top: 60px;
+    padding-top: 40px;
+    border-top: 1px dashed rgba(255,46,154,0.3);
+  }
+
+  .binder-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .binder-title {
+    font-family: 'Bungee', sans-serif;
+    font-size: 1.6rem;
+    color: var(--neon-yellow);
+    text-shadow: 0 0 15px rgba(255,242,0,0.5);
+    letter-spacing: 0.05em;
+  }
+
+  .filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .filter {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.55rem;
+    padding: 8px 12px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    transition: all 0.2s;
+  }
+
+  .filter:hover { color: var(--ink); border-color: var(--ink); }
+  .filter.active {
+    color: var(--bg);
+    background: var(--neon-cyan);
+    border-color: var(--neon-cyan);
+  }
+
+  .binder-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 12px;
+  }
+
+  .mini-card {
+    aspect-ratio: 5/7;
+    border-radius: 6px;
+    border: 2px solid;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+    transition: transform 0.2s;
+  }
+
+  .mini-card:hover { transform: scale(1.06); z-index: 2; }
+
+  .mini-card[data-rarity="common"] { border-color: var(--r-common); }
+  .mini-card[data-rarity="uncommon"] { border-color: var(--r-uncommon); }
+  .mini-card[data-rarity="rare"] { border-color: var(--r-rare); }
+  .mini-card[data-rarity="holo"] { border-color: var(--r-holo); box-shadow: 0 0 12px rgba(233,30,99,0.5); }
+  .mini-card[data-rarity="ultra"] { border-color: var(--r-ultra); box-shadow: 0 0 14px rgba(255,215,0,0.6); }
+  .mini-card[data-rarity="secret"] {
+    border-color: var(--r-secret);
+    box-shadow: 0 0 18px rgba(255,0,230,0.7);
+  }
+
+  .mini-art {
+    flex: 1;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .mini-art img {
+    width: 90%;
+    height: 90%;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  }
+
+  .mini-card[data-rarity="common"] .mini-art img,
+  .mini-card[data-rarity="uncommon"] .mini-art img {
+    image-rendering: pixelated;
+    width: 75%;
+    height: 75%;
+  }
+
+  .mini-name {
+    font-family: 'Bungee', sans-serif;
+    font-size: 0.55rem;
+    text-align: center;
+    color: #2c2c3a;
+    text-transform: uppercase;
+    margin-top: 3px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .count-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(0,0,0,0.75);
+    color: var(--neon-yellow);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.5rem;
+    padding: 2px 5px;
+    border-radius: 3px;
+    z-index: 3;
+  }
+
+  .price-tag {
+    margin-top: 2px;
+    text-align: center;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.45rem;
+    color: var(--neon-green);
+    letter-spacing: 0.05em;
+    min-height: 0.7rem;
+    text-shadow: 0 0 4px rgba(57, 255, 20, 0.5);
+  }
+
+  .price-tag.loading { color: var(--muted); text-shadow: none; }
+  .price-tag.unknown { color: var(--muted); text-shadow: none; opacity: 0.5; }
+
+  /* Pulled-card price overlay */
+  .card-price {
+    position: absolute;
+    bottom: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.85);
+    color: var(--neon-green);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.6rem;
+    padding: 4px 10px;
+    border: 1px solid var(--neon-green);
+    border-radius: 3px;
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.4s, bottom 0.4s;
+    text-shadow: 0 0 6px rgba(57, 255, 20, 0.6);
+    box-shadow: 0 0 12px rgba(57, 255, 20, 0.3);
+  }
+
+  .card.flipped .card-price { opacity: 1; bottom: -22px; }
+
+  .empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+  }
+
+  /* footer */
+  footer {
+    text-align: center;
+    margin-top: 60px;
+    color: var(--muted);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 0.55rem;
+    letter-spacing: 0.2em;
+    opacity: 0.6;
+  }
+
+  /* Animations */
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0) rotateZ(0); }
+    25% { transform: translateX(-8px) rotateZ(-2deg); }
+    75% { transform: translateX(8px) rotateZ(2deg); }
+  }
+
+  @keyframes tearAway {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2) rotateZ(5deg); }
+    100% { transform: scale(0.3) rotateZ(15deg) translateY(-200px); opacity: 0; }
+  }
+
+  @keyframes cardFlyIn {
+    0% { transform: translateY(60px) scale(0.7); opacity: 0; }
+    100% { transform: translateY(0) scale(1); opacity: 1; }
+  }
+
+  @keyframes holoShift {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+
+  @keyframes holoSweep {
+    0% { background-position: -100% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  @keyframes rotateBG {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+
+  @keyframes dropIn {
+    0% { transform: translateY(-30px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+
+  /* responsive tweaks */
+  @media (max-width: 600px) {
+    .pack { width: 180px; height: 310px; }
+    .pack-label .big { font-size: 1.6rem; }
+    .cards-reveal { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .btn { font-size: 0.6rem; padding: 12px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <h1 class="logo">POKÉPACK<span>// booster simulator v1.0</span></h1>
+    <p class="sub">/// rip · reveal · repeat ///</p>
+  </header>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">PACKS</div>
+      <div class="stat-val" id="stat-packs">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">CARDS</div>
+      <div class="stat-val" id="stat-cards">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">UNIQUE</div>
+      <div class="stat-val" id="stat-unique">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">SECRETS</div>
+      <div class="stat-val" id="stat-secrets">0</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">VALUE</div>
+      <div class="stat-val" id="stat-value">$0</div>
+    </div>
+  </div>
+
+  <div class="pack-stage">
+    <div class="pack" id="pack" role="button" aria-label="Open booster pack">
+      <div class="pack-body"></div>
+      <div class="pack-tear"></div>
+      <div class="pack-label">
+        <span class="big">BOOSTER</span>
+        <span class="small">NEON EDITION</span>
+        <span class="tiny">5 CARDS / 1 RARE+</span>
+      </div>
+    </div>
+    <p class="hint" id="hint">▼ CLICK PACK TO OPEN ▼</p>
+    <div class="cards-reveal" id="reveal"></div>
+    <div class="actions" id="actions" style="display:none;">
+      <button class="btn primary" id="btn-new">Open Another</button>
+      <button class="btn" id="btn-flip-all">Reveal All</button>
+    </div>
+  </div>
+
+  <div class="binder">
+    <div class="binder-head">
+      <h2 class="binder-title">// Your Binder</h2>
+      <div class="filters" id="filters">
+        <button class="filter active" data-filter="all">All</button>
+        <button class="filter" data-filter="common">Common</button>
+        <button class="filter" data-filter="uncommon">Uncommon</button>
+        <button class="filter" data-filter="rare">Rare</button>
+        <button class="filter" data-filter="holo">Holo</button>
+        <button class="filter" data-filter="ultra">Ultra</button>
+        <button class="filter" data-filter="secret">Secret</button>
+      </div>
+    </div>
+    <p style="font-family:'Press Start 2P',monospace;font-size:0.5rem;color:var(--muted);letter-spacing:0.15em;margin-bottom:18px;opacity:0.7;">
+      ▸ market prices via pokemontcg.io · tcgplayer data · indicative only
+    </p>
+    <div class="binder-grid" id="binder">
+      <div class="empty">No cards yet. Rip a pack to start collecting.</div>
+    </div>
+  </div>
+
+  <footer>© POKÉPACK SIM · NOT AFFILIATED WITH NINTENDO</footer>
+</div>
+
+<script>
+/* ---------------- DATA ---------------- */
+
+/* id = National Pokédex number, used to fetch sprites from PokéAPI's GitHub CDN.
+   shiny flag swaps to shiny sprites for secret rares. */
+const POKEMON = [
+  // Common
+  { id: 16,  name: 'Pidgey',     type: 'normal',   rarity: 'common',   hp: 40 },
+  { id: 19,  name: 'Rattata',    type: 'normal',   rarity: 'common',   hp: 30 },
+  { id: 10,  name: 'Caterpie',   type: 'grass',    rarity: 'common',   hp: 40 },
+  { id: 13,  name: 'Weedle',     type: 'grass',    rarity: 'common',   hp: 40 },
+  { id: 41,  name: 'Zubat',      type: 'dark',     rarity: 'common',   hp: 40 },
+  { id: 129, name: 'Magikarp',   type: 'water',    rarity: 'common',   hp: 30 },
+  { id: 21,  name: 'Spearow',    type: 'normal',   rarity: 'common',   hp: 40 },
+  { id: 23,  name: 'Ekans',      type: 'dark',     rarity: 'common',   hp: 50 },
+  { id: 74,  name: 'Geodude',    type: 'fighting', rarity: 'common',   hp: 60 },
+
+  // Uncommon
+  { id: 25,  name: 'Pikachu',    type: 'electric', rarity: 'uncommon', hp: 60 },
+  { id: 1,   name: 'Bulbasaur',  type: 'grass',    rarity: 'uncommon', hp: 70 },
+  { id: 4,   name: 'Charmander', type: 'fire',     rarity: 'uncommon', hp: 60 },
+  { id: 7,   name: 'Squirtle',   type: 'water',    rarity: 'uncommon', hp: 70 },
+  { id: 39,  name: 'Jigglypuff', type: 'normal',   rarity: 'uncommon', hp: 70 },
+  { id: 52,  name: 'Meowth',     type: 'normal',   rarity: 'uncommon', hp: 60 },
+  { id: 54,  name: 'Psyduck',    type: 'water',    rarity: 'uncommon', hp: 70 },
+  { id: 66,  name: 'Machop',     type: 'fighting', rarity: 'uncommon', hp: 70 },
+
+  // Rare
+  { id: 2,   name: 'Ivysaur',    type: 'grass',    rarity: 'rare',     hp: 90 },
+  { id: 5,   name: 'Charmeleon', type: 'fire',     rarity: 'rare',     hp: 90 },
+  { id: 8,   name: 'Wartortle',  type: 'water',    rarity: 'rare',     hp: 90 },
+  { id: 26,  name: 'Raichu',     type: 'electric', rarity: 'rare',     hp: 110 },
+  { id: 37,  name: 'Vulpix',     type: 'fire',     rarity: 'rare',     hp: 80 },
+  { id: 133, name: 'Eevee',      type: 'normal',   rarity: 'rare',     hp: 80 },
+  { id: 143, name: 'Snorlax',    type: 'normal',   rarity: 'rare',     hp: 140 },
+
+  // Holo
+  { id: 3,   name: 'Venusaur',   type: 'grass',    rarity: 'holo',     hp: 150 },
+  { id: 6,   name: 'Charizard',  type: 'fire',     rarity: 'holo',     hp: 170 },
+  { id: 9,   name: 'Blastoise',  type: 'water',    rarity: 'holo',     hp: 160 },
+  { id: 94,  name: 'Gengar',     type: 'psychic',  rarity: 'holo',     hp: 130 },
+  { id: 65,  name: 'Alakazam',   type: 'psychic',  rarity: 'holo',     hp: 120 },
+  { id: 130, name: 'Gyarados',   type: 'water',    rarity: 'holo',     hp: 160 },
+
+  // Ultra Rare
+  { id: 150, name: 'Mewtwo',     type: 'psychic',  rarity: 'ultra',    hp: 180 },
+  { id: 144, name: 'Articuno',   type: 'water',    rarity: 'ultra',    hp: 170 },
+  { id: 145, name: 'Zapdos',     type: 'electric', rarity: 'ultra',    hp: 170 },
+  { id: 146, name: 'Moltres',    type: 'fire',     rarity: 'ultra',    hp: 170 },
+  { id: 149, name: 'Dragonite',  type: 'dragon',   rarity: 'ultra',    hp: 190 },
+
+  // Secret Rare (shiny variants for that "chase card" feel)
+  { id: 151, name: 'Mew ✦',      type: 'psychic',  rarity: 'secret',   hp: 200, shiny: true },
+  { id: 249, name: 'Shiny Lugia',type: 'psychic',  rarity: 'secret',   hp: 220, shiny: true },
+  { id: 384, name: 'Rainbow Rayquaza', type: 'dragon', rarity: 'secret', hp: 230, shiny: true }
+];
+
+/* Sprite URL builder. Uses PokeAPI's GitHub-hosted sprites CDN.
+   - High rarities get the high-res official artwork.
+   - Lower rarities get the smaller standard sprite (faster load, retro vibe). */
+function spriteFor(card) {
+  const base = 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon';
+  const useArtwork = ['rare', 'holo', 'ultra', 'secret'].includes(card.rarity);
+  if (useArtwork) {
+    return card.shiny
+      ? `${base}/other/official-artwork/shiny/${card.id}.png`
+      : `${base}/other/official-artwork/${card.id}.png`;
+  }
+  return card.shiny ? `${base}/shiny/${card.id}.png` : `${base}/${card.id}.png`;
+}
+
+/* Rarity drop rates per card slot.
+   A booster has 5 cards: 3 commons, 1 uncommon, 1 "rare slot"
+   The rare slot uses weighted rolls. */
+const COMMON_POOL    = POKEMON.filter(p => p.rarity === 'common');
+const UNCOMMON_POOL  = POKEMON.filter(p => p.rarity === 'uncommon');
+const RARE_SLOT_WEIGHTS = [
+  { rarity: 'rare',     weight: 60 },
+  { rarity: 'holo',     weight: 25 },
+  { rarity: 'ultra',    weight: 12 },
+  { rarity: 'secret',   weight: 3 }
+];
+
+/* ---------------- PRICE FETCHING (pokemontcg.io, no API key needed) ---------------- */
+
+/* Cache by pokemon name to avoid refetching. Stored in memory only. */
+const priceCache = new Map();    // name -> price (number) or null (unknown)
+const inflightPrice = new Map(); // name -> Promise
+
+/* Map our rarity tiers to keywords that appear in real TCG card rarity strings.
+   The API has many rarity strings ("Common", "Rare Holo", "Rare Holo VMAX",
+   "Rare Secret", "Rare Rainbow", etc.) so we score matches loosely. */
+const RARITY_MATCH = {
+  common:   ['Common'],
+  uncommon: ['Uncommon'],
+  rare:     ['Rare'],
+  holo:     ['Holo'],
+  ultra:    ['Ultra', 'EX', 'GX', 'V', 'VMAX', 'Full Art'],
+  secret:   ['Secret', 'Rainbow', 'Hyper', 'Shiny', 'Gold']
+};
+
+function pickBestCard(cards, targetRarity) {
+  if (!cards || !cards.length) return null;
+  const keywords = RARITY_MATCH[targetRarity] || [];
+  // Score each card by how well its rarity string matches our target
+  const scored = cards.map(c => {
+    const r = (c.rarity || '').toLowerCase();
+    let score = 0;
+    keywords.forEach(k => { if (r.includes(k.toLowerCase())) score += 10; });
+    // Prefer cards that actually have price data
+    if (c.tcgplayer?.prices) score += 5;
+    return { card: c, score };
+  });
+  scored.sort((a, b) => b.score - a.score);
+  return scored[0].card;
+}
+
+function extractMarketPrice(tcgCard) {
+  const prices = tcgCard?.tcgplayer?.prices;
+  if (!prices) return null;
+  // Try common price variants in order of preference
+  const variants = ['holofoil', 'reverseHolofoil', 'normal', '1stEditionHolofoil', '1stEditionNormal', 'unlimited', 'unlimitedHolofoil'];
+  for (const v of variants) {
+    const p = prices[v];
+    if (p?.market) return p.market;
+    if (p?.mid) return p.mid;
+  }
+  // Fallback: any first available
+  for (const key of Object.keys(prices)) {
+    const p = prices[key];
+    if (p?.market) return p.market;
+    if (p?.mid) return p.mid;
+  }
+  return null;
+}
+
+async function fetchPrice(card) {
+  if (priceCache.has(card.name)) return priceCache.get(card.name);
+  if (inflightPrice.has(card.name)) return inflightPrice.get(card.name);
+
+  // Clean name for searching (strip our "✦", "Shiny", "Rainbow" prefixes/suffixes)
+  const cleanName = card.name
+    .replace(/[✦★]/g, '')
+    .replace(/^(Shiny|Rainbow)\s+/i, '')
+    .trim();
+
+  const url = `https://api.pokemontcg.io/v2/cards?q=name:"${encodeURIComponent(cleanName)}"&pageSize=20&orderBy=-set.releaseDate`;
+
+  const promise = fetch(url)
+    .then(r => r.ok ? r.json() : null)
+    .then(json => {
+      const best = pickBestCard(json?.data, card.rarity);
+      const price = best ? extractMarketPrice(best) : null;
+      priceCache.set(card.name, price);
+      inflightPrice.delete(card.name);
+      return price;
+    })
+    .catch(err => {
+      console.warn('Price fetch failed for', cleanName, err);
+      priceCache.set(card.name, null);
+      inflightPrice.delete(card.name);
+      return null;
+    });
+
+  inflightPrice.set(card.name, promise);
+  return promise;
+}
+
+function formatPrice(price) {
+  if (price == null) return '—';
+  if (price < 1)    return `$${price.toFixed(2)}`;
+  if (price < 100)  return `$${price.toFixed(2)}`;
+  return `$${Math.round(price).toLocaleString()}`;
+}
+
+/* ---------------- STATE ---------------- */
+const state = {
+  packsOpened: 0,
+  totalCards: 0,
+  binder: {},          // key: name -> { card, count }
+  currentFilter: 'all'
+};
+
+/* ---------------- RNG ---------------- */
+function rand(n) { return Math.floor(Math.random() * n); }
+
+function pickFromPool(pool) {
+  return pool[rand(pool.length)];
+}
+
+function pickWeighted(weights) {
+  const total = weights.reduce((s, w) => s + w.weight, 0);
+  let r = Math.random() * total;
+  for (const w of weights) {
+    r -= w.weight;
+    if (r <= 0) return w.rarity;
+  }
+  return weights[weights.length - 1].rarity;
+}
+
+function rollRareSlot() {
+  const rarity = pickWeighted(RARE_SLOT_WEIGHTS);
+  const pool = POKEMON.filter(p => p.rarity === rarity);
+  return pickFromPool(pool);
+}
+
+function generatePack() {
+  return [
+    pickFromPool(COMMON_POOL),
+    pickFromPool(COMMON_POOL),
+    pickFromPool(COMMON_POOL),
+    pickFromPool(UNCOMMON_POOL),
+    rollRareSlot()
+  ];
+}
+
+/* ---------------- DOM ---------------- */
+const $pack    = document.getElementById('pack');
+const $hint    = document.getElementById('hint');
+const $reveal  = document.getElementById('reveal');
+const $actions = document.getElementById('actions');
+const $binder  = document.getElementById('binder');
+const $btnNew  = document.getElementById('btn-new');
+const $btnFlip = document.getElementById('btn-flip-all');
+
+function makeCardHTML(card) {
+  const typeClass = `type-${card.type}`;
+  const rarityLabel = card.rarity.toUpperCase();
+  const sprite = spriteFor(card);
+  return `
+    <div class="face face-back"></div>
+    <div class="face face-front">
+      <div class="card-top">
+        <span>${card.name}</span>
+        <span class="card-hp">HP ${card.hp}</span>
+      </div>
+      <div class="card-art ${typeClass}">
+        <img src="${sprite}" alt="${card.name}" loading="lazy" onerror="this.style.display='none'">
+      </div>
+      <div class="card-name">${card.name}</div>
+      <div class="card-footer">
+        <span>${card.type}</span>
+        <span class="rarity-badge">${rarityLabel}</span>
+      </div>
+    </div>
+    <div class="card-price" data-pokemon="${card.name}">$ ---</div>
+  `;
+}
+
+function renderPack(cards) {
+  $reveal.innerHTML = '';
+  cards.forEach((card, i) => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.dataset.rarity = card.rarity;
+    el.innerHTML = makeCardHTML(card);
+    el.addEventListener('click', () => el.classList.add('flipped'));
+    $reveal.appendChild(el);
+  });
+  $reveal.classList.add('show');
+
+  // Fetch prices asynchronously and update each card's price tag
+  cards.forEach((card, i) => {
+    fetchPrice(card).then(price => {
+      const cardEl = $reveal.children[i];
+      if (!cardEl) return;
+      const priceEl = cardEl.querySelector('.card-price');
+      if (!priceEl) return;
+      priceEl.textContent = price != null ? formatPrice(price) : 'NO DATA';
+      if (price == null) {
+        priceEl.style.color = 'var(--muted)';
+        priceEl.style.borderColor = 'var(--muted)';
+        priceEl.style.boxShadow = 'none';
+        priceEl.style.textShadow = 'none';
+      }
+      updateStats();
+    });
+  });
+}
+
+function addToBinder(cards) {
+  cards.forEach(card => {
+    if (!state.binder[card.name]) {
+      state.binder[card.name] = { card, count: 0 };
+    }
+    state.binder[card.name].count++;
+  });
+  state.totalCards += cards.length;
+  state.packsOpened++;
+}
+
+function updateStats() {
+  document.getElementById('stat-packs').textContent = state.packsOpened;
+  document.getElementById('stat-cards').textContent = state.totalCards;
+  document.getElementById('stat-unique').textContent = Object.keys(state.binder).length;
+  const secrets = Object.values(state.binder).filter(e => e.card.rarity === 'secret').length;
+  document.getElementById('stat-secrets').textContent = secrets;
+
+  // Total portfolio value across all owned cards (including duplicates)
+  let total = 0;
+  Object.values(state.binder).forEach(entry => {
+    const price = priceCache.get(entry.card.name);
+    if (price != null) total += price * entry.count;
+  });
+  document.getElementById('stat-value').textContent =
+    total > 0 ? formatPrice(total) : '$—';
+}
+
+const RARITY_ORDER = { secret: 0, ultra: 1, holo: 2, rare: 3, uncommon: 4, common: 5 };
+
+function renderBinder() {
+  const entries = Object.values(state.binder);
+  const filtered = state.currentFilter === 'all'
+    ? entries
+    : entries.filter(e => e.card.rarity === state.currentFilter);
+
+  if (filtered.length === 0) {
+    $binder.innerHTML = `<div class="empty">${
+      state.currentFilter === 'all'
+        ? 'No cards yet. Rip a pack to start collecting.'
+        : 'No cards of this rarity yet. Keep ripping!'
+    }</div>`;
+    return;
+  }
+
+  filtered.sort((a, b) => {
+    const r = RARITY_ORDER[a.card.rarity] - RARITY_ORDER[b.card.rarity];
+    return r !== 0 ? r : a.card.name.localeCompare(b.card.name);
+  });
+
+  $binder.innerHTML = filtered.map(e => {
+    const c = e.card;
+    const cachedPrice = priceCache.get(c.name);
+    let priceHTML;
+    if (cachedPrice === undefined) {
+      priceHTML = `<div class="price-tag loading" data-pokemon="${c.name}">···</div>`;
+    } else if (cachedPrice == null) {
+      priceHTML = `<div class="price-tag unknown">no data</div>`;
+    } else {
+      const totalForOwned = cachedPrice * e.count;
+      priceHTML = `<div class="price-tag">${formatPrice(cachedPrice)}${e.count > 1 ? ` <span style="opacity:.6">(×${e.count}=${formatPrice(totalForOwned)})</span>` : ''}</div>`;
+    }
+    return `
+      <div class="mini-card" data-rarity="${c.rarity}" title="${c.name} · ${c.rarity}">
+        ${e.count > 1 ? `<div class="count-badge">x${e.count}</div>` : ''}
+        <div class="mini-art type-${c.type}">
+          <img src="${spriteFor(c)}" alt="${c.name}" loading="lazy" onerror="this.style.display='none'">
+        </div>
+        <div class="mini-name">${c.name}</div>
+        ${priceHTML}
+      </div>
+    `;
+  }).join('');
+
+  // Trigger price fetches for any cards that haven't been priced yet, then re-render once each resolves
+  filtered.forEach(e => {
+    if (!priceCache.has(e.card.name)) {
+      fetchPrice(e.card).then(() => {
+        renderBinder();
+        updateStats();
+      });
+    }
+  });
+}
+
+/* ---------------- FLOW ---------------- */
+function openPack() {
+  if ($pack.classList.contains('opening') || $pack.classList.contains('torn')) return;
+
+  $hint.style.display = 'none';
+  $pack.classList.add('opening');
+
+  setTimeout(() => {
+    $pack.classList.remove('opening');
+    $pack.classList.add('torn');
+
+    const cards = generatePack();
+    addToBinder(cards);
+    updateStats();
+    renderBinder();
+
+    setTimeout(() => {
+      $pack.style.display = 'none';
+      renderPack(cards);
+      $actions.style.display = 'flex';
+    }, 600);
+  }, 1500);
+}
+
+function resetForNewPack() {
+  $reveal.classList.remove('show');
+  $reveal.innerHTML = '';
+  $actions.style.display = 'none';
+  $pack.style.display = '';
+  $pack.classList.remove('torn', 'opening');
+  $hint.style.display = '';
+}
+
+$pack.addEventListener('click', openPack);
+$btnNew.addEventListener('click', resetForNewPack);
+$btnFlip.addEventListener('click', () => {
+  $reveal.querySelectorAll('.card').forEach(c => c.classList.add('flipped'));
+});
+
+document.getElementById('filters').addEventListener('click', e => {
+  if (!e.target.matches('.filter')) return;
+  document.querySelectorAll('.filter').forEach(f => f.classList.remove('active'));
+  e.target.classList.add('active');
+  state.currentFilter = e.target.dataset.filter;
+  renderBinder();
+});
+
+updateStats();
+renderBinder();
+</script>
+
+</body>
+</html>

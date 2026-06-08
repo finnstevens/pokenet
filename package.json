@@ -1,0 +1,12 @@
+{
+  "name": "pokepack-sim",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Neon retro Pokémon booster pack opening simulator",
+  "scripts": {
+    "dev": "bun run server.js",
+    "start": "bun run server.js"
+  },
+  "dependencies": {}
+}

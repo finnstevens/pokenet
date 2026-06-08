@@ -1,0 +1,106 @@
+/* Real Pokémon TCG sets. Each set's cards are loaded live from pokemontcg.io
+   by services/cards.js (keyed on apiSetId). Here we define how each set is
+   monetized and how a pack from it is structured.
+
+   - Prismatic Evolutions is the free starter pack: cost 0, gated by a 60s
+     cooldown between opens.
+   - The others cost money in dollars (earned by selling cards / daily reward).
+
+   `pack.slots` lists the card slots in a booster. Each slot is either a fixed
+   tier name, `'reverse'` (a common/uncommon shown as its reverse-holo variant),
+   or `'rare-slot'` (a weighted roll over `pack.rareSlot`). Odds are an
+   approximation of real pull rates and are labelled indicative in the UI. */
+
+export const SETS = [
+  {
+    id: 'prismatic',
+    apiSetId: 'sv8pt5',
+    name: 'Prismatic Evolutions',
+    blurb: 'FREE pack · one every 2min. Eeveelutions & the SIR chase.',
+    cost: 0,
+    cooldownMs: 120_000,
+    pack: {
+      slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
+      rareSlot: [
+        { tier: 'rare',   w: 48 },
+        { tier: 'holo',   w: 30 },
+        { tier: 'ultra',  w: 15 },
+        { tier: 'secret', w: 7 },
+      ],
+    },
+    theme: {
+      '--accent': '#00f0ff', '--accent-glow': 'rgba(0,240,255,0.45)',
+      '--pack-c1': '#00f0ff', '--pack-c2': '#b829ff', '--pack-c3': '#39ff14', '--pack-c4': '#ff2e9a',
+    },
+  },
+  {
+    id: '151',
+    apiSetId: 'sv3pt5',
+    name: '151',
+    blurb: 'Kanto nostalgia. Chase the Charizard ex SIR.',
+    cost: 6,
+    cooldownMs: 0,
+    pack: {
+      slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
+      rareSlot: [
+        { tier: 'rare',   w: 50 },
+        { tier: 'holo',   w: 30 },
+        { tier: 'ultra',  w: 14 },
+        { tier: 'secret', w: 6 },
+      ],
+    },
+    theme: {
+      '--accent': '#ff2e9a', '--accent-glow': 'rgba(255,46,154,0.45)',
+      '--pack-c1': '#ff2e9a', '--pack-c2': '#ffd700', '--pack-c3': '#00f0ff', '--pack-c4': '#b829ff',
+    },
+  },
+  {
+    id: 'surging',
+    apiSetId: 'sv8',
+    name: 'Surging Sparks',
+    blurb: 'Electric-charged. Pikachu ex & big Illustration Rares.',
+    cost: 5,
+    cooldownMs: 0,
+    pack: {
+      slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
+      rareSlot: [
+        { tier: 'rare',   w: 52 },
+        { tier: 'holo',   w: 28 },
+        { tier: 'ultra',  w: 14 },
+        { tier: 'secret', w: 6 },
+      ],
+    },
+    theme: {
+      '--accent': '#fff200', '--accent-glow': 'rgba(255,242,0,0.45)',
+      '--pack-c1': '#fff200', '--pack-c2': '#ff2e9a', '--pack-c3': '#00f0ff', '--pack-c4': '#b829ff',
+    },
+  },
+  {
+    id: 'paldean',
+    apiSetId: 'sv4pt5',
+    name: 'Paldean Fates',
+    blurb: 'Shiny vault. Stuffed with shiny pulls + chase SIRs.',
+    cost: 8,
+    cooldownMs: 0,
+    pack: {
+      // shiny-heavy set: a dedicated shiny-friendly hit + a rare slot
+      slots: ['common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'holo', 'rare-slot'],
+      rareSlot: [
+        { tier: 'rare',   w: 40 },
+        { tier: 'holo',   w: 34 },
+        { tier: 'ultra',  w: 17 },
+        { tier: 'secret', w: 9 },
+      ],
+    },
+    theme: {
+      '--accent': '#b829ff', '--accent-glow': 'rgba(184,41,255,0.5)',
+      '--pack-c1': '#b829ff', '--pack-c2': '#ffd700', '--pack-c3': '#ff2e9a', '--pack-c4': '#00f0ff',
+    },
+  },
+];
+
+export function getSet(id) {
+  return SETS.find(s => s.id === id) || SETS[0];
+}
+
+export const FREE_SET_ID = 'prismatic';
