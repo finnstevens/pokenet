@@ -3,6 +3,15 @@
 Architecture & conventions for this project. Read this first; for the build
 history see [`docs/dev-log-2026-06-08.md`](docs/dev-log-2026-06-08.md).
 
+## How we build (spec-driven — do this by default)
+Every non-trivial change in this repo goes through the **`spec-driven-development`**
+skill (`.claude/skills/`): interview the user → write a spec in `docs/specs/` →
+**Gate 1** (user approves the spec) → research, self-test, find gaps →
+**Gate 2** (user approves research + plan) → build → verify → ship when asked.
+Run it automatically for any feature/behavior change/refactor/non-trivial fix, or
+when the user types `/spec`. Skip only for truly trivial one-liners (and say so).
+Never write implementation code before Gate 2. Specs index: [`docs/specs/`](docs/specs/README.md).
+
 ## What it is
 A neon retro-arcade Pokémon booster-pack opening simulator, built around **real
 cards**: every pull is a specific real printing from a real set, shown with its
