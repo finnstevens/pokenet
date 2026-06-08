@@ -23,6 +23,8 @@ function freshState() {
     locked: [],          // [uid] — protected from selling
     sealed: {},          // set.id -> count of sealed packs held (unopened)
     boxes: {},           // set.id -> number[] of held booster boxes, each = its packs remaining
+    sleeves: 0,          // count of unused card sleeves in inventory
+    sleeved: [],         // [uid] — cards in a sleeve (protected from selling; grading foundation)
     achievements: [],    // [achievementId]
     lastDailyClaim: null,
     lastOpen: {},        // setId -> timestamp (for cooldown-gated sets)
@@ -42,6 +44,7 @@ export const state = freshState();
 /* ---- persistence ---- */
 const PERSIST_KEYS = [
   'money', 'packsOpened', 'totalCards', 'binder', 'pendingSales', 'wishlist', 'locked', 'sealed', 'boxes',
+  'sleeves', 'sleeved',
   'achievements', 'lastDailyClaim', 'lastOpen', 'selectedSet', 'currentFilter', 'binderTab', 'shopTab', 'sort',
 ];
 
@@ -156,7 +159,8 @@ export function addMoney(n) {
 export function listForSale(uid, now) {
   const entry = state.binder[uid];
   if (!entry || entry.count < 1) return null;
-  if (state.locked.includes(uid)) return null; // protected from selling
+  if (state.locked.includes(uid)) return null;  // protected from selling
+  if (state.sleeved.includes(uid)) return null; // sleeved cards are protected too
   const card = entry.card;
   entry.count--;
   if (entry.count <= 0) delete state.binder[uid];
@@ -183,7 +187,7 @@ export function listForSale(uid, now) {
 export function bulkSellCommonsUncommons(now) {
   let count = 0, total = 0;
   for (const [uid, e] of Object.entries(state.binder)) {
-    if ((e.card.tier === 'common' || e.card.tier === 'uncommon') && !state.locked.includes(uid)) {
+    if ((e.card.tier === 'common' || e.card.tier === 'uncommon') && !state.locked.includes(uid) && !state.sleeved.includes(uid)) {
       const card = e.card;
       const value = sellValue(card);
       for (let i = 0; i < e.count; i++) {
@@ -259,6 +263,29 @@ export function toggleLock(uid) {
   commit();
 }
 export function isLocked(uid) { return state.locked.includes(uid); }
+
+/* ---- card sleeves (consumable inventory; sleeved cards are protected) ---- */
+export function addSleeves(n) {
+  state.sleeves = Math.max(0, state.sleeves + n);
+  commit();
+}
+export function isSleeved(uid) { return state.sleeved.includes(uid); }
+/* Sleeve a card (consumes one sleeve) or un-sleeve it (refunds the sleeve).
+   Returns { sleeved } on success, or null if trying to sleeve with none left. */
+export function toggleSleeve(uid) {
+  const i = state.sleeved.indexOf(uid);
+  if (i >= 0) {                      // un-sleeve → refund
+    state.sleeved.splice(i, 1);
+    state.sleeves++;
+    commit();
+    return { sleeved: false };
+  }
+  if (state.sleeves <= 0) return null; // none to apply
+  state.sleeves--;
+  state.sleeved.push(uid);
+  commit();
+  return { sleeved: true };
+}
 
 export function setSelectedSet(id) { state.selectedSet = id; commit(); }
 export function setFilter(f)       { state.currentFilter = f; commit(); }

@@ -4,7 +4,7 @@
    - Pokémon Sealed: booster packs you've bought and kept sealed; open one
      anytime from here. */
 
-import { state, isWished, isLocked, setBinderTab, takeBox, addSealedMany } from '../state/store.js';
+import { state, isWished, isLocked, isSleeved, setBinderTab, takeBox, addSealedMany } from '../state/store.js';
 import { SETS } from '../data/sets.js';
 import { formatPrice } from '../services/prices.js';
 import { showCard } from './modal.js';
@@ -109,6 +109,7 @@ function renderCards() {
       <div class="mini-card" data-rarity="${c.tier}" data-uid="${c.uid}" title="${c.name} · ${c.rarity} · ${c.setName} #${c.number}">
         ${isWished(c.uid) ? `<div class="wish-badge">★</div>` : ''}
         ${isLocked(c.uid) ? `<div class="lock-badge">🔒</div>` : ''}
+        ${isSleeved(c.uid) ? `<div class="sleeve-badge">🧷</div>` : ''}
         ${e.count > 1 ? `<div class="count-badge">x${e.count}</div>` : ''}
         ${c.isReverse ? `<div class="variant-badge mini">RV</div>` : ''}
         <div class="mini-art">

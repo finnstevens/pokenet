@@ -4,13 +4,17 @@
    ticker so it completes even off this tab). Any owned card is sellable,
    including the last copy. */
 
-import { state, sellableCards, listForSale, processSales, claimDaily, isLocked, bulkSellCommonsUncommons, setShopTab } from '../state/store.js';
+import { state, sellableCards, listForSale, processSales, claimDaily, isLocked, bulkSellCommonsUncommons, setShopTab,
+         spendMoney, addSleeves, isSleeved } from '../state/store.js';
 import { sellValue, sellDurationMs, dailyCooldownRemaining, formatCooldown, DAILY_REWARD } from '../game/economy.js';
 import { formatPrice } from '../services/prices.js';
 import { playCoin, playClick } from '../services/audio.js';
 import { toast } from './toast.js';
 
-let dailyEl, sellingSection, sellingEl, dupesEl, bulkBtn, shopSubtabs, shopBuy, shopSell;
+let dailyEl, sellingSection, sellingEl, dupesEl, bulkBtn, shopSubtabs, shopBuy, shopSell, sleeveCountEl, buySleevesBtn;
+
+const SLEEVE_COST = 8;   // $ per box of sleeves
+const SLEEVE_COUNT = 65; // sleeves per box
 
 export function initShop() {
   dailyEl = document.getElementById('daily-claim');
@@ -21,11 +25,25 @@ export function initShop() {
   shopSubtabs = document.getElementById('shop-subtabs');
   shopBuy = document.getElementById('shop-buy');
   shopSell = document.getElementById('shop-sell');
+  sleeveCountEl = document.getElementById('sleeve-count');
+  buySleevesBtn = document.getElementById('btn-buy-sleeves');
 
   shopSubtabs.addEventListener('click', e => {
     const tab = e.target.closest('.subtab');
     if (!tab) return;
     setShopTab(tab.dataset.sub);
+  });
+
+  buySleevesBtn.addEventListener('click', () => {
+    if (state.money < SLEEVE_COST) {
+      toast('Not enough money', `A box of sleeves costs $${SLEEVE_COST}.`);
+      return;
+    }
+    spendMoney(SLEEVE_COST);
+    addSleeves(SLEEVE_COUNT);
+    playClick();
+    toast('Sleeves added', `+${SLEEVE_COUNT} sleeves. Sleeve a card from its detail view to protect it.`);
+    renderShop();
   });
 
   bulkBtn.addEventListener('click', () => {
@@ -47,6 +65,10 @@ export function initShop() {
     if (!card) return;
     if (isLocked(card.dataset.uid)) {
       toast('Locked', 'Unlock this card in the Binder before selling.');
+      return;
+    }
+    if (isSleeved(card.dataset.uid)) {
+      toast('Sleeved', 'Remove the sleeve (in the card view) before selling.');
       return;
     }
     const sale = listForSale(card.dataset.uid, Date.now());
@@ -99,10 +121,19 @@ export function renderShop() {
   shopBuy.style.display = tab === 'buy' ? '' : 'none';
   shopSell.style.display = tab === 'sell' ? '' : 'none';
 
+  renderSupplies();
   renderDaily();
   renderBulk();
   renderSelling();
   renderSellable();
+}
+
+/* Sleeve inventory + buy button (in the Buy tab's Supplies section). */
+function renderSupplies() {
+  if (!sleeveCountEl) return;
+  const n = state.sleeves || 0;
+  sleeveCountEl.textContent = `${n} sleeve${n === 1 ? '' : 's'}`;
+  buySleevesBtn.textContent = `Buy ${SLEEVE_COUNT} — $${SLEEVE_COST}`;
 }
 
 /* Reflect how many unlocked commons/uncommons can be bulk-sold, and for how much. */
@@ -178,15 +209,21 @@ function renderSellable() {
   dupesEl.innerHTML = owned.map(e => {
     const c = e.card;
     const locked = isLocked(c.uid);
+    const sleeved = isSleeved(c.uid);
+    const protectedCard = locked || sleeved;
+    const title = locked ? 'Locked — unlock in the Binder to sell'
+      : sleeved ? 'Sleeved — remove the sleeve to sell'
+      : `Sell one ${c.name} (${c.setName} #${c.number}) · ~${(sellDurationMs(c) / 1000)}s to sell`;
     return `
-      <div class="dupe-card${locked ? ' locked-card' : ''}" data-rarity="${c.tier}" data-uid="${c.uid}" title="${locked ? 'Locked — unlock in the Binder to sell' : `Sell one ${c.name} (${c.setName} #${c.number}) · ~${(sellDurationMs(c) / 1000)}s to sell`}">
+      <div class="dupe-card${protectedCard ? ' locked-card' : ''}" data-rarity="${c.tier}" data-uid="${c.uid}" title="${title}">
         ${e.count > 1 ? `<div class="count-badge">x${e.count}</div>` : ''}
         ${locked ? `<div class="lock-badge">🔒</div>` : ''}
+        ${sleeved ? `<div class="sleeve-badge">🧷</div>` : ''}
         ${c.isReverse ? `<div class="variant-badge mini">RV</div>` : ''}
         <div class="mini-art">
           <img src="${c.image}" alt="${c.name}" loading="lazy" onerror="this.classList.add('img-fail')">
         </div>
-        <div class="sell-tag">${locked ? 'locked' : '+' + formatPrice(sellValue(c))}</div>
+        <div class="sell-tag">${locked ? 'locked' : sleeved ? 'sleeved' : '+' + formatPrice(sellValue(c))}</div>
       </div>
     `;
   }).join('');

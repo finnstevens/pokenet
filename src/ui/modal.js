@@ -2,8 +2,9 @@
    owned count, and a wishlist toggle. */
 
 import { formatPrice } from '../services/prices.js';
-import { state, isWished, toggleWishlist, isLocked, toggleLock } from '../state/store.js';
+import { state, isWished, toggleWishlist, isLocked, toggleLock, isSleeved, toggleSleeve } from '../state/store.js';
 import { playClick } from '../services/audio.js';
+import { toast } from './toast.js';
 
 let backdrop, modal, currentUid = null;
 
@@ -24,6 +25,7 @@ export function showCard(card) {
   const owned = state.binder[card.uid]?.count || 0;
   const wished = isWished(card.uid);
   const locked = isLocked(card.uid);
+  const sleeved = isSleeved(card.uid);
 
   modal.innerHTML = `
     <button class="modal-close" aria-label="close">×</button>
@@ -45,7 +47,11 @@ export function showCard(card) {
       <button class="btn ${locked ? 'primary' : ''}" id="modal-lock-btn">
         ${locked ? '🔒 Locked' : '🔓 Lock'}
       </button>
+      <button class="btn ${sleeved ? 'primary' : ''}" id="modal-sleeve-btn">
+        ${sleeved ? '🧷 Sleeved' : '🧷 Sleeve'}
+      </button>
     </div>
+    <div class="modal-sleeve-hint">${sleeved ? 'Protected from selling · ' : ''}${state.sleeves} sleeve${state.sleeves === 1 ? '' : 's'} left</div>
   `;
 
   modal.querySelector('.modal-close').addEventListener('click', close);
@@ -57,6 +63,12 @@ export function showCard(card) {
   modal.querySelector('#modal-lock-btn').addEventListener('click', () => {
     playClick();
     toggleLock(card.uid);
+    showCard(card);
+  });
+  modal.querySelector('#modal-sleeve-btn').addEventListener('click', () => {
+    const res = toggleSleeve(card.uid);
+    if (!res) { toast('No sleeves', 'Buy a box of sleeves in the Shop ▸ Buy tab first.'); return; }
+    playClick();
     showCard(card);
   });
 

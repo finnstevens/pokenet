@@ -991,10 +991,47 @@ header {
   filter: drop-shadow(0 0 4px rgba(0,0,0,0.9));
 }
 
-/* A locked card in the shop can't be sold — dim it and disable the hover. */
+.sleeve-badge {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  font-size: 0.7rem;
+  z-index: 3;
+  filter: drop-shadow(0 0 4px rgba(0,240,255,0.9));
+}
+
+/* A locked or sleeved card in the shop can't be sold — dim it, disable hover. */
 .dupe-card.locked-card { opacity: 0.55; cursor: not-allowed; }
 .dupe-card.locked-card:hover { transform: none; box-shadow: none; }
 .dupe-card.locked-card .sell-tag { color: var(--muted); }
+
+/* Supplies section (Buy tab) — card sleeves. */
+.supplies .supply-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px;
+  border: 2px solid var(--accent, #00f0ff);
+  border-radius: 10px;
+  background: rgba(0,240,255,0.05);
+}
+.supply-name { font-family: 'Bungee', sans-serif; font-size: 0.85rem; color: var(--ink); }
+.supply-desc { font-size: 0.72rem; color: var(--muted); margin-top: 4px; max-width: 420px; }
+.supply-buy { display: flex; align-items: center; gap: 12px; }
+.supply-have {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.5rem;
+  color: var(--neon-green);
+  letter-spacing: 0.05em;
+}
+.modal-sleeve-hint {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
 
 .price-tag {
   margin-top: 2px;
