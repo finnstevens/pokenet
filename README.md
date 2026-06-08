@@ -3,7 +3,11 @@
 A neon retro-arcade Pokémon booster-pack opening simulator built around **real
 cards**. Every pull is a specific real printing from a real set — shown with its
 actual card image and priced at its actual market price. Rip packs, chase the
-grails, build your binder, and play the shard economy — all in the browser.
+grails, build your binder, and play the money economy — all in the browser.
+
+### ▶ [Live demo](https://finnstevens.github.io/pokenet/)
+
+![POKÉPACK screenshot](docs/screenshot.png)
 
 ## Stack
 
