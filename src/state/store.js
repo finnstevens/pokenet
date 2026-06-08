@@ -127,9 +127,10 @@ export function addMoney(n) {
 }
 
 /* List one copy of a card (by uid) for sale. Any owned card is sellable;
-   listing the last copy removes it from the binder. The sale isn't instant —
-   it lands in `pendingSales` and pays out when its timer completes (see
-   processSales). Returns the created sale, or null. */
+   listing the last copy removes it from the binder. Sales aren't instant and
+   sell ONE AT A TIME: `pendingSales` is a queue where only the front card is
+   actively counting down (has a `readyAt`); the rest are queued (`readyAt`
+   null) until their turn. Returns the created sale, or null. */
 export function listForSale(uid, now) {
   const entry = state.binder[uid];
   if (!entry || entry.count < 1) return null;
@@ -138,30 +139,47 @@ export function listForSale(uid, now) {
   entry.count--;
   if (entry.count <= 0) delete state.binder[uid];
 
+  const duration = sellDurationMs(card);
+  const isFront = state.pendingSales.length === 0;
   const sale = {
     id: `${now}-${Math.floor(Math.random() * 1e6)}`,
     card,
     value: sellValue(card),
-    listedAt: now,
-    readyAt: now + sellDurationMs(card),
+    duration,
+    // The front sale starts ticking immediately; queued sales wait.
+    listedAt: isFront ? now : null,
+    readyAt: isFront ? now + duration : null,
   };
   state.pendingSales.push(sale);
   commit();
   return sale;
 }
 
-/* Complete any sales whose timer has elapsed: credit money and clear them.
-   Returns the completed sales (for toasts). Call on a ticker. */
+/* Advance the sale queue: activate the front sale if it hasn't started, and
+   complete it once its timer elapses (crediting money), then activate the next.
+   Sells one card at a time. Returns completed sales (for toasts). */
 export function processSales(now) {
   if (!state.pendingSales.length) return [];
-  const done = state.pendingSales.filter(s => now >= s.readyAt);
-  if (!done.length) return [];
-  state.pendingSales = state.pendingSales.filter(s => now < s.readyAt);
-  const gained = done.reduce((s, sale) => s + sale.value, 0);
-  state.money = +(state.money + gained).toFixed(2);
+  const front = state.pendingSales[0];
+
+  if (front.readyAt == null) {            // front just reached the head of the queue — start it
+    front.listedAt = now;
+    front.readyAt = now + front.duration;
+    commit();
+    return [];
+  }
+  if (now < front.readyAt) return [];      // still selling
+
+  const done = state.pendingSales.shift(); // completed
+  state.money = +(state.money + done.value).toFixed(2);
+  const next = state.pendingSales[0];      // start the next one
+  if (next && next.readyAt == null) {
+    next.listedAt = now;
+    next.readyAt = now + next.duration;
+  }
   checkAchievements(state);
   commit();
-  return done;
+  return [done];
 }
 
 export function claimDaily(now) {

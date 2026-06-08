@@ -50,22 +50,28 @@ export function initShop() {
 }
 
 /* Update only the countdown bar + time text of the already-rendered selling
-   cards (matched by sale id). No DOM rebuild → no image flicker. */
+   cards (matched by sale id). No DOM rebuild → no image flicker. Only the front
+   sale is active; the rest read "queued". */
 function tickSelling() {
   const sales = state.pendingSales;
   if (!sales.length) return;
   const now = Date.now();
-  for (const s of sales) {
+  sales.forEach((s, i) => {
     const el = sellingEl.querySelector(`[data-saleid="${s.id}"]`);
-    if (!el) return; // DOM not built yet for this sale — a full render will catch up
+    if (!el) return;
+    const bar = el.querySelector('.sell-progress span');
+    const tag = el.querySelector('.sell-tag');
+    if (s.readyAt == null) {                 // queued — waiting its turn
+      if (bar) bar.style.width = '0%';
+      if (tag) tag.textContent = `queued · ${formatPrice(s.value)}`;
+      return;
+    }
     const total = s.readyAt - s.listedAt;
     const remaining = Math.max(0, s.readyAt - now);
     const pct = total > 0 ? Math.min(100, Math.round(((total - remaining) / total) * 100)) : 100;
-    const bar = el.querySelector('.sell-progress span');
     if (bar) bar.style.width = pct + '%';
-    const tag = el.querySelector('.sell-tag');
     if (tag) tag.textContent = remaining > 0 ? `${(remaining / 1000).toFixed(1)}s · ${formatPrice(s.value)}` : 'sold!';
-  }
+  });
 }
 
 export function renderShop() {
@@ -96,22 +102,26 @@ function renderSelling() {
   sellingSection.style.display = '';
 
   const now = Date.now();
-  // Soonest-to-complete first.
-  const ordered = [...sales].sort((a, b) => a.readyAt - b.readyAt);
-
-  sellingEl.innerHTML = ordered.map(s => {
+  // Keep queue order — index 0 is the one actively selling.
+  sellingEl.innerHTML = sales.map(s => {
     const c = s.card;
-    const total = s.readyAt - s.listedAt;
-    const remaining = Math.max(0, s.readyAt - now);
-    const pct = total > 0 ? Math.min(100, Math.round(((total - remaining) / total) * 100)) : 100;
-    const secs = (remaining / 1000).toFixed(1);
+    const queued = s.readyAt == null;
+    let pct = 0, label;
+    if (queued) {
+      label = `queued · ${formatPrice(s.value)}`;
+    } else {
+      const total = s.readyAt - s.listedAt;
+      const remaining = Math.max(0, s.readyAt - now);
+      pct = total > 0 ? Math.min(100, Math.round(((total - remaining) / total) * 100)) : 100;
+      label = remaining > 0 ? `${(remaining / 1000).toFixed(1)}s · ${formatPrice(s.value)}` : 'sold!';
+    }
     return `
-      <div class="dupe-card selling" data-saleid="${s.id}" data-rarity="${c.tier}" title="${c.name} — selling for ${formatPrice(s.value)}">
+      <div class="dupe-card selling${queued ? ' queued' : ''}" data-saleid="${s.id}" data-rarity="${c.tier}" title="${c.name} — selling for ${formatPrice(s.value)}">
         <div class="mini-art">
           <img src="${c.image}" alt="${c.name}" loading="lazy" onerror="this.classList.add('img-fail')">
         </div>
         <div class="sell-progress"><span style="width:${pct}%"></span></div>
-        <div class="sell-tag listing">${remaining > 0 ? `${secs}s · ${formatPrice(s.value)}` : 'sold!'}</div>
+        <div class="sell-tag listing">${label}</div>
       </div>
     `;
   }).join('');

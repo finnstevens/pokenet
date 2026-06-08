@@ -1264,6 +1264,9 @@ footer {
 .dupe-card.selling { cursor: default; opacity: 0.92; }
 .dupe-card.selling:hover { transform: none; box-shadow: none; }
 .dupe-card.selling .mini-art { filter: grayscale(0.25); animation: pulse 1.6s ease-in-out infinite; }
+.dupe-card.selling.queued { opacity: 0.7; }
+.dupe-card.selling.queued .mini-art { animation: none; filter: grayscale(0.6); }
+.dupe-card.selling.queued .sell-tag.listing { color: var(--muted); text-shadow: none; }
 
 .sell-progress {
   margin-top: 4px;
