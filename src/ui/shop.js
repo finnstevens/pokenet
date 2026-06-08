@@ -4,13 +4,13 @@
    ticker so it completes even off this tab). Any owned card is sellable,
    including the last copy. */
 
-import { state, sellableCards, listForSale, processSales, claimDaily, isLocked, bulkSellCommonsUncommons } from '../state/store.js';
+import { state, sellableCards, listForSale, processSales, claimDaily, isLocked, bulkSellCommonsUncommons, setShopTab } from '../state/store.js';
 import { sellValue, sellDurationMs, dailyCooldownRemaining, formatCooldown, DAILY_REWARD } from '../game/economy.js';
 import { formatPrice } from '../services/prices.js';
 import { playCoin, playClick } from '../services/audio.js';
 import { toast } from './toast.js';
 
-let dailyEl, sellingSection, sellingEl, dupesEl, bulkBtn;
+let dailyEl, sellingSection, sellingEl, dupesEl, bulkBtn, shopSubtabs, shopBuy, shopSell;
 
 export function initShop() {
   dailyEl = document.getElementById('daily-claim');
@@ -18,6 +18,15 @@ export function initShop() {
   sellingEl = document.getElementById('selling');
   dupesEl = document.getElementById('dupes');
   bulkBtn = document.getElementById('bulk-sell-btn');
+  shopSubtabs = document.getElementById('shop-subtabs');
+  shopBuy = document.getElementById('shop-buy');
+  shopSell = document.getElementById('shop-sell');
+
+  shopSubtabs.addEventListener('click', e => {
+    const tab = e.target.closest('.subtab');
+    if (!tab) return;
+    setShopTab(tab.dataset.sub);
+  });
 
   bulkBtn.addEventListener('click', () => {
     const { count, total } = bulkSellCommonsUncommons(Date.now());
@@ -84,6 +93,12 @@ function tickSelling() {
 
 export function renderShop() {
   if (!dailyEl) return;
+  // Reflect the active Buy/Sell subtab.
+  const tab = state.shopTab === 'sell' ? 'sell' : 'buy';
+  shopSubtabs.querySelectorAll('.subtab').forEach(t => t.classList.toggle('active', t.dataset.sub === tab));
+  shopBuy.style.display = tab === 'buy' ? '' : 'none';
+  shopSell.style.display = tab === 'sell' ? '' : 'none';
+
   renderDaily();
   renderBulk();
   renderSelling();

@@ -241,7 +241,8 @@ export function openFromSealed(setId) {
   const set = getSet(setId);
   if ((state.sealed[set.id] || 0) < 1) return;
   consumeSealed(set.id);
-  document.querySelector('#tabs [data-tab="open"]').click();
+  document.querySelector('#tabs [data-tab="shop"]').click();
+  document.querySelector('#shop-subtabs [data-sub="buy"]').click();
   setSelectedSet(set.id);
   selectSet(set);
   const cards = loadedSet(set.apiSetId);

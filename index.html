@@ -48,35 +48,9 @@
   </div>
 
   <nav class="tabs" id="tabs">
-    <button class="tab active" data-tab="open">Open</button>
+    <button class="tab active" data-tab="shop">Shop</button>
     <button class="tab" data-tab="binder">Binder</button>
-    <button class="tab" data-tab="shop">Shop</button>
   </nav>
-
-  <!-- OPEN VIEW -->
-  <section class="view active" id="view-open">
-    <div class="pack-picker" id="pack-picker"></div>
-
-    <div class="pack-stage">
-      <div class="pack" id="pack" role="button" aria-label="Open booster pack">
-        <div class="pack-body"></div>
-        <img class="pack-art" id="pack-art" alt="">
-        <div class="pack-tear"></div>
-        <img class="pack-logo" id="pack-logo" alt="" onerror="this.classList.add('img-fail')">
-        <div class="pack-label">
-          <span class="big" id="pack-fallback"></span>
-          <span class="tiny" id="pack-tiny"></span>
-        </div>
-      </div>
-      <p class="hint" id="hint">▼ CLICK PACK TO OPEN ▼</p>
-      <button class="btn keep-sealed-btn" id="btn-keep-sealed">Keep Sealed</button>
-      <div class="cards-reveal" id="reveal"></div>
-      <div class="actions" id="actions" style="display:none;">
-        <button class="btn primary" id="btn-new">Open Another</button>
-        <button class="btn" id="btn-flip-all">Reveal All</button>
-      </div>
-    </div>
-  </section>
 
   <!-- BINDER VIEW -->
   <section class="view" id="view-binder">
@@ -125,31 +99,65 @@
     </div>
   </section>
 
-  <!-- SHOP VIEW -->
-  <section class="view" id="view-shop">
-    <h2 class="section-title" style="margin-bottom:20px;">// Shop</h2>
-
-    <div class="shop-section">
-      <h3>Daily Reward</h3>
-      <div class="daily-claim" id="daily-claim"></div>
+  <!-- SHOP VIEW (Buy / Sell) -->
+  <section class="view active" id="view-shop">
+    <div class="binder-head">
+      <h2 class="section-title">// Shop</h2>
+      <div class="binder-subtabs" id="shop-subtabs">
+        <button class="subtab active" data-sub="buy">Buy</button>
+        <button class="subtab" data-sub="sell">Sell</button>
+      </div>
     </div>
 
-    <div class="shop-section" id="selling-section" style="display:none;">
-      <h3>On the Market</h3>
-      <p style="color:var(--muted);font-size:0.78rem;letter-spacing:0.05em;margin-bottom:16px;">
-        Listed cards sell after a short time, then pay out automatically.
-      </p>
-      <div class="dupes-grid" id="selling"></div>
+    <!-- BUY: pick a pack and rip it (or keep it sealed) -->
+    <div id="shop-buy">
+      <div class="pack-picker" id="pack-picker"></div>
+
+      <div class="pack-stage">
+        <div class="pack" id="pack" role="button" aria-label="Open booster pack">
+          <div class="pack-body"></div>
+          <img class="pack-art" id="pack-art" alt="">
+          <div class="pack-tear"></div>
+          <img class="pack-logo" id="pack-logo" alt="" onerror="this.classList.add('img-fail')">
+          <div class="pack-label">
+            <span class="big" id="pack-fallback"></span>
+            <span class="tiny" id="pack-tiny"></span>
+          </div>
+        </div>
+        <p class="hint" id="hint">▼ CLICK PACK TO OPEN ▼</p>
+        <button class="btn keep-sealed-btn" id="btn-keep-sealed">Keep Sealed</button>
+        <div class="cards-reveal" id="reveal"></div>
+        <div class="actions" id="actions" style="display:none;">
+          <button class="btn primary" id="btn-new">Open Another</button>
+          <button class="btn" id="btn-flip-all">Reveal All</button>
+        </div>
+      </div>
     </div>
 
-    <div class="shop-section">
-      <h3>Sell Cards</h3>
-      <p style="color:var(--muted);font-size:0.78rem;letter-spacing:0.05em;margin-bottom:16px;">
-        Click any card to list one copy for sale at its market value (minus a haircut). Cards sell one at a time. Selling your last copy removes it.
-      </p>
-      <button class="btn" id="bulk-sell-btn" style="margin-bottom:18px;">⬇ Sell all commons &amp; uncommons</button>
-      <div class="dupes-grid" id="dupes">
-        <div class="empty">No cards to sell yet.</div>
+    <!-- SELL: daily reward, market listings, sell cards -->
+    <div id="shop-sell" style="display:none;">
+      <div class="shop-section">
+        <h3>Daily Reward</h3>
+        <div class="daily-claim" id="daily-claim"></div>
+      </div>
+
+      <div class="shop-section" id="selling-section" style="display:none;">
+        <h3>On the Market</h3>
+        <p style="color:var(--muted);font-size:0.78rem;letter-spacing:0.05em;margin-bottom:16px;">
+          Listed cards sell after a short time, then pay out automatically.
+        </p>
+        <div class="dupes-grid" id="selling"></div>
+      </div>
+
+      <div class="shop-section">
+        <h3>Sell Cards</h3>
+        <p style="color:var(--muted);font-size:0.78rem;letter-spacing:0.05em;margin-bottom:16px;">
+          Click any card to list one copy for sale at its market value (minus a haircut). Cards sell one at a time. Selling your last copy removes it.
+        </p>
+        <button class="btn" id="bulk-sell-btn" style="margin-bottom:18px;">⬇ Sell all commons &amp; uncommons</button>
+        <div class="dupes-grid" id="dupes">
+          <div class="empty">No cards to sell yet.</div>
+        </div>
       </div>
     </div>
   </section>

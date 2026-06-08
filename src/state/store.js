@@ -30,6 +30,7 @@ function freshState() {
     // UI-only
     currentFilter: 'all',
     binderTab: 'cards',  // 'cards' | 'sealed'
+    shopTab: 'buy',      // 'buy' | 'sell'
     sort: 'rarity',
     search: '',
   };
@@ -40,7 +41,7 @@ export const state = freshState();
 /* ---- persistence ---- */
 const PERSIST_KEYS = [
   'money', 'packsOpened', 'totalCards', 'binder', 'pendingSales', 'wishlist', 'locked', 'sealed',
-  'achievements', 'lastDailyClaim', 'lastOpen', 'selectedSet', 'currentFilter', 'binderTab', 'sort',
+  'achievements', 'lastDailyClaim', 'lastOpen', 'selectedSet', 'currentFilter', 'binderTab', 'shopTab', 'sort',
 ];
 
 let saveTimer = null;
@@ -243,6 +244,7 @@ export function isLocked(uid) { return state.locked.includes(uid); }
 export function setSelectedSet(id) { state.selectedSet = id; commit(); }
 export function setFilter(f)       { state.currentFilter = f; commit(); }
 export function setBinderTab(t)    { state.binderTab = t; commit(); }
+export function setShopTab(t)      { state.shopTab = t; commit(); }
 
 /* ---- sealed packs (held, unopened) ---- */
 export function addSealed(setId) {
