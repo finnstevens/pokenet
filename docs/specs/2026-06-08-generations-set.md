@@ -2,7 +2,7 @@
 title: Add the Generations set
 date: 2026-06-08
 slug: generations-set
-status: Verified   # Draft → Approved → Built → Verified → Shipped
+status: Shipped   # Draft → Approved → Built → Verified → Shipped
 owner: finn
 ---
 
@@ -32,4 +32,4 @@ owner: finn
 - Headless Brave: in picker at $18, loads, **no Buy Box** (no box), wrapper art renders.
 
 ## Changelog
-- `<pending>` — Add the Generations set (g1)
+- `db24990` — Add the Generations set (g1); pushed to main; deployed ✓

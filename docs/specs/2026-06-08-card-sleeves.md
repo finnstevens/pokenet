@@ -2,7 +2,7 @@
 title: Card Sleeves
 date: 2026-06-08
 slug: card-sleeves
-status: Verified   # Draft → Approved → Built → Verified → Shipped
+status: Shipped   # Draft → Approved → Built → Verified → Shipped
 owner: finn
 ---
 
@@ -121,4 +121,4 @@ All acceptance criteria met. (`sleeved` is the per-card flag the future grading
 feature will read.)
 
 ## Changelog
-- `<pending>` — Add card sleeves (grading foundation)
+- `5f23d22` — Add card sleeves (grading foundation); pushed to main; deployed ✓
