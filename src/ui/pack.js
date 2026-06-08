@@ -14,7 +14,7 @@ import { celebrate } from './fx.js';
 import { toast } from './toast.js';
 import * as sfx from '../services/audio.js';
 
-let $pack, $hint, $reveal, $actions, $picker, $big, $small, $tiny, $btnNew, $btnFlip;
+let $pack, $hint, $reveal, $actions, $picker, $logo, $fallback, $tiny, $btnNew, $btnFlip;
 let revealing = false; // true while cards are shown (pack hidden)
 let pendingAchievements = []; // held until the player flips the cards, so toasts don't spoil the pull
 
@@ -24,9 +24,9 @@ export function initPack() {
   $reveal  = document.getElementById('reveal');
   $actions = document.getElementById('actions');
   $picker  = document.getElementById('pack-picker');
-  $big     = document.getElementById('pack-big');
-  $small   = document.getElementById('pack-small');
-  $tiny    = document.getElementById('pack-tiny');
+  $logo     = document.getElementById('pack-logo');
+  $fallback = document.getElementById('pack-fallback');
+  $tiny     = document.getElementById('pack-tiny');
   $btnNew  = document.getElementById('btn-new');
   $btnFlip = document.getElementById('btn-flip-all');
 
@@ -56,8 +56,12 @@ export function initPack() {
 
 /* Apply a set's theme + labels and ensure its cards are loaded. */
 function selectSet(set) {
-  $big.textContent = 'BOOSTER';
-  $small.textContent = set.name.toUpperCase();
+  // Real set artwork: the official logo from pokemontcg.io. Falls back to the
+  // set name as text if the image can't load.
+  $logo.classList.remove('img-fail');
+  $logo.src = `https://images.pokemontcg.io/${set.apiSetId}/logo.png`;
+  $logo.alt = set.name;
+  $fallback.textContent = set.name;
   $tiny.textContent = set.cost === 0 ? `FREE · 1 PER ${formatCooldown(set.cooldownMs)}` : `$${set.cost}`;
   Object.entries(set.theme).forEach(([k, v]) => $pack.style.setProperty(k, v));
   renderPicker();

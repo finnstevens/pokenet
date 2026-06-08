@@ -37,13 +37,35 @@ export function initShop() {
     renderShop();
   });
 
-  // Ticker: complete elapsed sales (credits money + toasts) and keep the
-  // countdowns ticking. Runs regardless of which tab is showing.
+  // Ticker: complete elapsed sales (credits money + toasts), and advance the
+  // live countdowns. Completion commits state → the store subscriber re-renders
+  // the shop once; between completions we ONLY nudge the progress bars/labels in
+  // place via tickSelling() — never rebuild innerHTML, which would reload every
+  // <img> and make the grid flicker.
   setInterval(() => {
     const done = processSales(Date.now());
     done.forEach(s => { playCoin(); toast('Sold', `${s.card.name} → +${formatPrice(s.value)}`); });
-    if (document.getElementById('view-shop').classList.contains('active')) renderShop();
+    if (document.getElementById('view-shop').classList.contains('active')) tickSelling();
   }, 250);
+}
+
+/* Update only the countdown bar + time text of the already-rendered selling
+   cards (matched by sale id). No DOM rebuild → no image flicker. */
+function tickSelling() {
+  const sales = state.pendingSales;
+  if (!sales.length) return;
+  const now = Date.now();
+  for (const s of sales) {
+    const el = sellingEl.querySelector(`[data-saleid="${s.id}"]`);
+    if (!el) return; // DOM not built yet for this sale — a full render will catch up
+    const total = s.readyAt - s.listedAt;
+    const remaining = Math.max(0, s.readyAt - now);
+    const pct = total > 0 ? Math.min(100, Math.round(((total - remaining) / total) * 100)) : 100;
+    const bar = el.querySelector('.sell-progress span');
+    if (bar) bar.style.width = pct + '%';
+    const tag = el.querySelector('.sell-tag');
+    if (tag) tag.textContent = remaining > 0 ? `${(remaining / 1000).toFixed(1)}s · ${formatPrice(s.value)}` : 'sold!';
+  }
 }
 
 export function renderShop() {
@@ -84,7 +106,7 @@ function renderSelling() {
     const pct = total > 0 ? Math.min(100, Math.round(((total - remaining) / total) * 100)) : 100;
     const secs = (remaining / 1000).toFixed(1);
     return `
-      <div class="dupe-card selling" data-rarity="${c.tier}" title="${c.name} — selling for ${formatPrice(s.value)}">
+      <div class="dupe-card selling" data-saleid="${s.id}" data-rarity="${c.tier}" title="${c.name} — selling for ${formatPrice(s.value)}">
         <div class="mini-art">
           <img src="${c.image}" alt="${c.name}" loading="lazy" onerror="this.classList.add('img-fail')">
         </div>

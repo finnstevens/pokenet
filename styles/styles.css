@@ -309,11 +309,26 @@ header {
   border-radius: 4px;
 }
 
-.pack-label {
+/* Real set artwork (official logo from pokemontcg.io) as the pack's face. */
+.pack-logo {
   position: absolute;
-  top: 50%;
+  top: 46%;
   left: 50%;
   transform: translate(-50%, -50%);
+  width: 84%;
+  max-height: 62%;
+  object-fit: contain;
+  z-index: 2;
+  pointer-events: none;
+  filter: drop-shadow(0 3px 8px rgba(0,0,0,0.5)) drop-shadow(0 0 16px rgba(255,255,255,0.35));
+}
+.pack-logo.img-fail { display: none; }
+
+.pack-label {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   font-family: 'Bungee', sans-serif;
   color: #fff;
   text-align: center;
@@ -325,27 +340,20 @@ header {
   width: 90%;
 }
 
-.pack-label .big {
+/* The big text is only the fallback shown when the logo image fails to load. */
+.pack-label .big { display: none; }
+.pack-logo.img-fail ~ .pack-label .big {
   display: block;
-  font-size: 2.2rem;
+  font-size: 1.8rem;
   line-height: 0.9;
   letter-spacing: 0.02em;
-}
-
-.pack-label .small {
-  display: block;
-  font-family: 'Press Start 2P', monospace;
-  font-size: 0.55rem;
-  margin-top: 14px;
-  letter-spacing: 0.3em;
-  color: var(--neon-yellow);
+  margin-bottom: 10px;
 }
 
 .pack-label .tiny {
   display: block;
   font-family: 'Space Mono', monospace;
   font-size: 0.7rem;
-  margin-top: 18px;
   letter-spacing: 0.1em;
   opacity: 0.9;
 }
