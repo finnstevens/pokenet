@@ -2,7 +2,7 @@
 title: Add the Black & White set
 date: 2026-06-08
 slug: black-and-white-set
-status: Verified   # Draft → Approved → Built → Verified → Shipped
+status: Shipped   # Draft → Approved → Built → Verified → Shipped
 owner: finn
 ---
 
@@ -98,4 +98,4 @@ No engine/`rarityToTier`/`CACHE_PREFIX` changes.
 All acceptance criteria met.
 
 ## Changelog
-- `<pending>` — Add the Black & White set (bw1)
+- `d051494` — Add the Black & White set (bw1) (pushed to main; auto-deploys)
