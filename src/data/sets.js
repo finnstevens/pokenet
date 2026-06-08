@@ -119,6 +119,27 @@ export const SETS = [
     },
   },
   {
+    id: 'obsidian',
+    apiSetId: 'sv3',
+    name: 'Obsidian Flames',
+    blurb: 'Terastal Charizard & Dragonite. Dark-fire chase cards.',
+    cost: 6, // fallback; actual price = average pack value, computed from live data
+    cooldownMs: 0,
+    pack: {
+      slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
+      rareSlot: [
+        { tier: 'rare',   w: 48 },
+        { tier: 'holo',   w: 32 },
+        { tier: 'ultra',  w: 15 },
+        { tier: 'secret', w: 5 },
+      ],
+    },
+    theme: {
+      '--accent': '#ff6b35', '--accent-glow': 'rgba(255,107,53,0.5)',
+      '--pack-c1': '#ff6b35', '--pack-c2': '#212121', '--pack-c3': '#ff2e9a', '--pack-c4': '#d84315',
+    },
+  },
+  {
     id: 'fossil',
     apiSetId: 'base3',
     name: 'Fossil',

@@ -64,6 +64,7 @@ Approximate prices:
 | Set | API id | Price |
 |-----|--------|-------|
 | Prismatic Evolutions | `sv8pt5` | **Free** · 1 per 2 min |
+| Obsidian Flames | `sv3` | ~$6 |
 | Surging Sparks | `sv8` | ~$7 |
 | Paldean Fates | `sv4pt5` | ~$18 |
 | Evolving Skies | `swsh7` | ~$22 |
