@@ -66,6 +66,7 @@ Approximate prices:
 | Prismatic Evolutions | `sv8pt5` | **Free** · 1 per 2 min |
 | Surging Sparks | `sv8` | ~$7 |
 | Paldean Fates | `sv4pt5` | ~$18 |
+| Evolving Skies | `swsh7` | ~$22 |
 | 151 | `sv3pt5` | ~$23 |
 | Fossil (vintage 1999) | `base3` | ~$65 |
 

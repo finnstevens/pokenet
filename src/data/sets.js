@@ -98,6 +98,27 @@ export const SETS = [
     },
   },
   {
+    id: 'evolving',
+    apiSetId: 'swsh7',
+    name: 'Evolving Skies',
+    blurb: 'Eeveelution alt arts. Chase the Moonbreon (Umbreon VMAX).',
+    cost: 22, // fallback; actual price = average pack value, computed from live data
+    cooldownMs: 0,
+    pack: {
+      slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
+      rareSlot: [
+        { tier: 'rare',   w: 46 },
+        { tier: 'holo',   w: 32 },
+        { tier: 'ultra',  w: 16 },
+        { tier: 'secret', w: 6 },
+      ],
+    },
+    theme: {
+      '--accent': '#39ff14', '--accent-glow': 'rgba(57,255,20,0.45)',
+      '--pack-c1': '#39ff14', '--pack-c2': '#00f0ff', '--pack-c3': '#ffd700', '--pack-c4': '#b829ff',
+    },
+  },
+  {
     id: 'fossil',
     apiSetId: 'base3',
     name: 'Fossil',
