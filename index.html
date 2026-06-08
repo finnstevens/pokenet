@@ -60,6 +60,7 @@
     <div class="pack-stage">
       <div class="pack" id="pack" role="button" aria-label="Open booster pack">
         <div class="pack-body"></div>
+        <img class="pack-art" id="pack-art" alt="">
         <div class="pack-tear"></div>
         <img class="pack-logo" id="pack-logo" alt="" onerror="this.classList.add('img-fail')">
         <div class="pack-label">
@@ -129,8 +130,9 @@
     <div class="shop-section">
       <h3>Sell Cards</h3>
       <p style="color:var(--muted);font-size:0.78rem;letter-spacing:0.05em;margin-bottom:16px;">
-        Click any card to list one copy for sale at its market value (minus a haircut). Selling your last copy removes it.
+        Click any card to list one copy for sale at its market value (minus a haircut). Cards sell one at a time. Selling your last copy removes it.
       </p>
+      <button class="btn" id="bulk-sell-btn" style="margin-bottom:18px;">⬇ Sell all commons &amp; uncommons</button>
       <div class="dupes-grid" id="dupes">
         <div class="empty">No cards to sell yet.</div>
       </div>

@@ -4,19 +4,27 @@
    ticker so it completes even off this tab). Any owned card is sellable,
    including the last copy. */
 
-import { state, sellableCards, listForSale, processSales, claimDaily, isLocked } from '../state/store.js';
+import { state, sellableCards, listForSale, processSales, claimDaily, isLocked, bulkSellCommonsUncommons } from '../state/store.js';
 import { sellValue, sellDurationMs, dailyCooldownRemaining, formatCooldown, DAILY_REWARD } from '../game/economy.js';
 import { formatPrice } from '../services/prices.js';
 import { playCoin, playClick } from '../services/audio.js';
 import { toast } from './toast.js';
 
-let dailyEl, sellingSection, sellingEl, dupesEl;
+let dailyEl, sellingSection, sellingEl, dupesEl, bulkBtn;
 
 export function initShop() {
   dailyEl = document.getElementById('daily-claim');
   sellingSection = document.getElementById('selling-section');
   sellingEl = document.getElementById('selling');
   dupesEl = document.getElementById('dupes');
+  bulkBtn = document.getElementById('bulk-sell-btn');
+
+  bulkBtn.addEventListener('click', () => {
+    const { count, total } = bulkSellCommonsUncommons();
+    if (count > 0) { playCoin(); toast('Bulk sold', `${count} cards → +${formatPrice(total)}`); }
+    else toast('Nothing to sell', 'No unlocked commons or uncommons.');
+    renderShop();
+  });
 
   dailyEl.addEventListener('click', e => {
     if (!e.target.closest('#daily-btn')) return;
@@ -77,8 +85,24 @@ function tickSelling() {
 export function renderShop() {
   if (!dailyEl) return;
   renderDaily();
+  renderBulk();
   renderSelling();
   renderSellable();
+}
+
+/* Reflect how many unlocked commons/uncommons can be bulk-sold, and for how much. */
+function renderBulk() {
+  let count = 0, total = 0;
+  for (const [uid, e] of Object.entries(state.binder)) {
+    if ((e.card.tier === 'common' || e.card.tier === 'uncommon') && !isLocked(uid)) {
+      count += e.count;
+      total += sellValue(e.card) * e.count;
+    }
+  }
+  bulkBtn.disabled = count === 0;
+  bulkBtn.textContent = count > 0
+    ? `⬇ Sell ${count} commons & uncommons  ·  +${formatPrice(total)}`
+    : '⬇ Sell all commons & uncommons';
 }
 
 function renderDaily() {

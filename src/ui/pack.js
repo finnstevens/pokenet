@@ -14,7 +14,7 @@ import { celebrate } from './fx.js';
 import { toast } from './toast.js';
 import * as sfx from '../services/audio.js';
 
-let $pack, $hint, $reveal, $actions, $picker, $logo, $fallback, $tiny, $btnNew, $btnFlip;
+let $pack, $hint, $reveal, $actions, $picker, $logo, $fallback, $tiny, $btnNew, $btnFlip, $packArt;
 let revealing = false; // true while cards are shown (pack hidden)
 let pendingAchievements = []; // held until the player flips the cards, so toasts don't spoil the pull
 
@@ -25,6 +25,7 @@ export function initPack() {
   $actions = document.getElementById('actions');
   $picker  = document.getElementById('pack-picker');
   $logo     = document.getElementById('pack-logo');
+  $packArt  = document.getElementById('pack-art');
   $fallback = document.getElementById('pack-fallback');
   $tiny     = document.getElementById('pack-tiny');
   $btnNew  = document.getElementById('btn-new');
@@ -78,8 +79,17 @@ function setTinyLabel(set) {
 
 /* Apply a set's theme + labels and ensure its cards are loaded. */
 function selectSet(set) {
-  // Real set artwork: the official logo from pokemontcg.io. Falls back to the
-  // set name as text if the image can't load.
+  // Real booster-pack wrapper art if we have it (assets/packs/<id>.png): it
+  // becomes the whole pack face and our logo is hidden (the wrapper has its own).
+  // If the file is missing, fall back to the holo gradient + set logo.
+  $pack.classList.remove('has-art');
+  $packArt.classList.remove('img-fail');
+  $packArt.onload = () => $pack.classList.add('has-art');
+  $packArt.onerror = () => { $packArt.classList.add('img-fail'); $pack.classList.remove('has-art'); };
+  $packArt.src = `./assets/packs/${set.id}.png`;
+
+  // Fallback artwork: the official set logo from pokemontcg.io (set name as text
+  // if even that fails).
   $logo.classList.remove('img-fail');
   $logo.src = `https://images.pokemontcg.io/${set.apiSetId}/logo.png`;
   $logo.alt = set.name;

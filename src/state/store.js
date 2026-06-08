@@ -155,6 +155,25 @@ export function listForSale(uid, now) {
   return sale;
 }
 
+/* Instantly sell every unlocked common & uncommon (all copies) for money —
+   a one-press way to clear out the junk. Returns { count, total }. */
+export function bulkSellCommonsUncommons() {
+  let count = 0, total = 0;
+  for (const [uid, e] of Object.entries(state.binder)) {
+    if ((e.card.tier === 'common' || e.card.tier === 'uncommon') && !state.locked.includes(uid)) {
+      total += sellValue(e.card) * e.count;
+      count += e.count;
+      delete state.binder[uid];
+    }
+  }
+  if (!count) return { count: 0, total: 0 };
+  total = +total.toFixed(2);
+  state.money = +(state.money + total).toFixed(2);
+  checkAchievements(state);
+  commit();
+  return { count, total };
+}
+
 /* Advance the sale queue: activate the front sale if it hasn't started, and
    complete it once its timer elapses (crediting money), then activate the next.
    Sells one card at a time. Returns completed sales (for toasts). */
