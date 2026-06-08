@@ -2,7 +2,7 @@
 title: Add Hidden Fates, Champion's Path, Unified Minds
 date: 2026-06-08
 slug: sm-swsh-sets
-status: Verified   # Draft → Approved → Built → Verified → Shipped
+status: Shipped   # Draft → Approved → Built → Verified → Shipped
 owner: finn
 ---
 
@@ -109,4 +109,5 @@ owner: finn
 All acceptance criteria met.
 
 ## Changelog
-- `<pending>` — Add Hidden Fates, Champion's Path, Unified Minds (+ GX/VMAX tiering)
+- `43c19f5` — Add Hidden Fates, Champion's Path, Unified Minds (+ GX/VMAX tiering);
+  pushed to main; deployed to GitHub Pages ✓
