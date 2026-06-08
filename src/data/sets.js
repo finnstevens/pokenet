@@ -61,6 +61,7 @@ export const SETS = [
     name: 'Surging Sparks',
     blurb: 'Electric-charged. Pikachu ex & big Illustration Rares.',
     cost: 5, sealedPrice: 5, // real sealed single-pack market price
+    box: { packs: 36, price: 150 }, // real sealed booster-box market price
     cooldownMs: 0,
     pack: {
       slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
@@ -104,6 +105,7 @@ export const SETS = [
     name: 'Evolving Skies',
     blurb: 'Eeveelution alt arts. Chase the Moonbreon (Umbreon VMAX).',
     cost: 15, sealedPrice: 15, // real sealed single-pack market price
+    box: { packs: 36, price: 520 }, // real sealed booster-box market price
     cooldownMs: 0,
     pack: {
       slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
@@ -125,6 +127,7 @@ export const SETS = [
     name: 'Obsidian Flames',
     blurb: 'Terastal Charizard & Dragonite. Dark-fire chase cards.',
     cost: 5, sealedPrice: 5, // real sealed single-pack market price
+    box: { packs: 36, price: 140 }, // real sealed booster-box market price
     cooldownMs: 0,
     pack: {
       slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
@@ -189,6 +192,7 @@ export const SETS = [
     name: 'EX Dragon',
     blurb: 'Vintage 2003. Rayquaza-led dragons; ex & secret-rare chase.',
     cost: 50, sealedPrice: 50, // real sealed single-pack market price
+    box: { packs: 36, price: 2400 }, // real sealed booster-box market price (approx, vintage)
     cooldownMs: 0,
     pack: {
       slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
@@ -210,6 +214,7 @@ export const SETS = [
     name: 'Base Set',
     blurb: 'Vintage 1999. The original — chase the holo Charizard.',
     cost: 350, sealedPrice: 350, // real sealed (Unlimited) single-pack market price
+    box: { packs: 36, price: 9500 }, // real sealed (Unlimited) booster-box market price (approx)
     cooldownMs: 0,
     pack: {
       // vintage: no reverse-holo slot; 7 commons/uncommons + 1 rare slot.
@@ -231,6 +236,7 @@ export const SETS = [
     name: 'Fossil',
     blurb: 'Vintage 1999. Premium. Holo Articuno / Aerodactyl / Lapras chase.',
     cost: 110, sealedPrice: 110, // real sealed (Unlimited) single-pack market price
+    box: { packs: 36, price: 3200 }, // real sealed (Unlimited) booster-box market price (approx)
     cooldownMs: 0,
     pack: {
       // vintage packs had no reverse-holo slot; 7 commons/uncommons + 1 rare slot.

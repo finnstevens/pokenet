@@ -4,11 +4,12 @@
    - Pokémon Sealed: booster packs you've bought and kept sealed; open one
      anytime from here. */
 
-import { state, isWished, isLocked, setBinderTab } from '../state/store.js';
+import { state, isWished, isLocked, setBinderTab, takeBox, addSealedMany } from '../state/store.js';
 import { SETS } from '../data/sets.js';
 import { formatPrice } from '../services/prices.js';
 import { showCard } from './modal.js';
-import { openFromSealed } from './pack.js';
+import { openFromSealed, openPackFromBox, ripBox } from './pack.js';
+import { toast } from './toast.js';
 
 const RARITY_ORDER = { secret: 0, ultra: 1, holo: 2, rare: 3, uncommon: 4, common: 5 };
 
@@ -35,9 +36,24 @@ export function initBinder() {
   });
 
   sealedGrid.addEventListener('click', e => {
-    const btn = e.target.closest('.open-sealed');
-    if (!btn) return;
-    openFromSealed(btn.dataset.set);
+    const openBtn = e.target.closest('.open-sealed');
+    if (openBtn) { openFromSealed(openBtn.dataset.set); return; }
+
+    const boxBtn = e.target.closest('.box-action');
+    if (!boxBtn) return;
+    const setId = boxBtn.dataset.set;
+    if (boxBtn.classList.contains('open-box-pack')) {
+      openPackFromBox(setId);
+    } else if (boxBtn.classList.contains('rip-box')) {
+      ripBox(setId);
+    } else if (boxBtn.classList.contains('unbox')) {
+      const n = takeBox(setId);
+      if (n) {
+        addSealedMany(setId, n);
+        const set = SETS.find(s => s.id === setId);
+        toast('Unboxed', `${n} sealed ${set ? set.name : ''} packs added to your sealed collection.`);
+      }
+    }
   });
 }
 
@@ -105,13 +121,37 @@ function renderCards() {
 }
 
 function renderSealed() {
-  const held = SETS.filter(s => (state.sealed[s.id] || 0) > 0);
-  if (held.length === 0) {
-    sealedGrid.innerHTML = `<div class="empty">No sealed packs. In the Open tab, choose “Keep Sealed” to bank a pack here instead of ripping it.</div>`;
+  const heldBoxes = SETS.filter(s => (state.boxes[s.id] || []).length > 0);
+  const heldPacks = SETS.filter(s => (state.sealed[s.id] || 0) > 0);
+
+  if (heldBoxes.length === 0 && heldPacks.length === 0) {
+    sealedGrid.innerHTML = `<div class="empty">Nothing sealed yet. In the Buy tab, choose “Keep Sealed” to bank a pack, or “Buy Box” to bank a whole booster box here.</div>`;
     return;
   }
 
-  sealedGrid.innerHTML = held.map(set => {
+  const boxHTML = heldBoxes.map(set => {
+    const boxes = state.boxes[set.id];
+    const packsLeft = boxes.reduce((a, b) => a + b, 0);
+    const each = set.box ? set.box.price : 0;
+    return `
+      <div class="sealed-card box-card" data-rarity="ultra" title="${set.name} · ${boxes.length} box · ${packsLeft} packs left">
+        <div class="count-badge">x${boxes.length} 📦</div>
+        <div class="sealed-art">
+          <img src="./assets/packs/${set.id}.png" alt="${set.name}" loading="lazy"
+               onerror="this.classList.add('img-fail')">
+        </div>
+        <div class="sealed-name">${set.name} Box</div>
+        <div class="box-meta">${packsLeft} packs left · ${formatPrice(each)} ea</div>
+        <div class="box-actions">
+          <button class="btn box-action open-box-pack" data-set="${set.id}">Open 1 pack</button>
+          <button class="btn box-action rip-box" data-set="${set.id}">Rip a box</button>
+          <button class="btn box-action unbox" data-set="${set.id}">Take out packs</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const packHTML = heldPacks.map(set => {
     const count = state.sealed[set.id];
     const each = set.sealedPrice ?? set.cost; // sealed-pack market value
     return `
@@ -127,6 +167,8 @@ function renderSealed() {
       </div>
     `;
   }).join('');
+
+  sealedGrid.innerHTML = boxHTML + packHTML;
 }
 
 function emptyMessage() {

@@ -22,6 +22,7 @@ function freshState() {
     wishlist: [],        // [uid]
     locked: [],          // [uid] — protected from selling
     sealed: {},          // set.id -> count of sealed packs held (unopened)
+    boxes: {},           // set.id -> number[] of held booster boxes, each = its packs remaining
     achievements: [],    // [achievementId]
     lastDailyClaim: null,
     lastOpen: {},        // setId -> timestamp (for cooldown-gated sets)
@@ -40,7 +41,7 @@ export const state = freshState();
 
 /* ---- persistence ---- */
 const PERSIST_KEYS = [
-  'money', 'packsOpened', 'totalCards', 'binder', 'pendingSales', 'wishlist', 'locked', 'sealed',
+  'money', 'packsOpened', 'totalCards', 'binder', 'pendingSales', 'wishlist', 'locked', 'sealed', 'boxes',
   'achievements', 'lastDailyClaim', 'lastOpen', 'selectedSet', 'currentFilter', 'binderTab', 'shopTab', 'sort',
 ];
 
@@ -105,6 +106,24 @@ export function addCards(cards) {
   });
   state.totalCards += cards.length;
   state.packsOpened++;
+  const unlocked = checkAchievements(state);
+  commit();
+  return unlocked;
+}
+
+/* Add several packs at once (e.g. ripping a whole booster box). Banks every
+   card, counts each pack toward packsOpened, and commits/notifies ONCE (so a
+   36-pack rip doesn't trigger 36 re-renders). `packArrays` is an array of packs,
+   each pack an array of cards. Returns newly-unlocked achievements. */
+export function addPacks(packArrays) {
+  packArrays.forEach(pack => {
+    pack.forEach(card => {
+      if (!state.binder[card.uid]) state.binder[card.uid] = { card, count: 0 };
+      state.binder[card.uid].count++;
+    });
+    state.totalCards += pack.length;
+    state.packsOpened++;
+  });
   const unlocked = checkAchievements(state);
   commit();
   return unlocked;
@@ -257,6 +276,58 @@ export function consumeSealed(setId) {
   if (state.sealed[setId] <= 0) delete state.sealed[setId];
   commit();
   return true;
+}
+/* Bank n loose sealed packs at once (e.g. taking all packs out of a box). */
+export function addSealedMany(setId, n) {
+  if (n <= 0) return;
+  state.sealed[setId] = (state.sealed[setId] || 0) + n;
+  commit();
+}
+
+/* ---- booster boxes (held; each box tracks its own remaining packs) ---- */
+
+/* Add one full booster box (with `packs` packs remaining) to the holdings. */
+export function addBox(setId, packs) {
+  if (!state.boxes[setId]) state.boxes[setId] = [];
+  state.boxes[setId].push(packs);
+  commit();
+}
+/* Index of the most-opened (fewest remaining) box for a set, or -1 if none.
+   Targeting the most-opened box first means partial boxes get finished before
+   fresh ones, and behavior is deterministic with multiple boxes. */
+function mostOpenedBoxIdx(setId) {
+  const arr = state.boxes[setId];
+  if (!arr || !arr.length) return -1;
+  let idx = 0;
+  for (let i = 1; i < arr.length; i++) if (arr[i] < arr[idx]) idx = i;
+  return idx;
+}
+/* Open one pack from the most-opened box: decrement it, dropping the box when it
+   hits zero. Returns true if a pack was consumed. */
+export function consumeBoxPack(setId) {
+  const idx = mostOpenedBoxIdx(setId);
+  if (idx < 0) return false;
+  const arr = state.boxes[setId];
+  arr[idx]--;
+  if (arr[idx] <= 0) arr.splice(idx, 1);
+  if (!arr.length) delete state.boxes[setId];
+  commit();
+  return true;
+}
+/* Remove the most-opened box entirely and return its remaining pack count (0 if
+   none). Used by "Rip a box" and "Take out packs". */
+export function takeBox(setId) {
+  const idx = mostOpenedBoxIdx(setId);
+  if (idx < 0) return 0;
+  const arr = state.boxes[setId];
+  const [n] = arr.splice(idx, 1);
+  if (!arr.length) delete state.boxes[setId];
+  commit();
+  return n;
+}
+/* Total packs remaining across all of a set's held boxes. */
+export function boxPacksRemaining(setId) {
+  return (state.boxes[setId] || []).reduce((a, b) => a + b, 0);
 }
 export function setSort(s)         { state.sort = s; commit(); }
 export function setSearch(q)       { state.search = q; notify(); }

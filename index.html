@@ -125,11 +125,20 @@
           </div>
         </div>
         <p class="hint" id="hint">▼ CLICK PACK TO OPEN ▼</p>
-        <button class="btn keep-sealed-btn" id="btn-keep-sealed">Keep Sealed</button>
+        <div class="buy-extra-btns">
+          <button class="btn keep-sealed-btn" id="btn-keep-sealed">Keep Sealed</button>
+          <button class="btn buy-box-btn" id="btn-buy-box" style="display:none;">Buy Box</button>
+        </div>
+        <div class="box-rip-head" id="box-rip-head" style="display:none;"></div>
         <div class="cards-reveal" id="reveal"></div>
         <div class="actions" id="actions" style="display:none;">
           <button class="btn primary" id="btn-new">Open Another</button>
           <button class="btn" id="btn-flip-all">Reveal All</button>
+        </div>
+        <div class="actions" id="box-controls" style="display:none;">
+          <button class="btn primary" id="btn-box-next">Open Next Pack ▶</button>
+          <button class="btn" id="btn-box-skip">⏭ Skip to Results</button>
+          <button class="btn primary" id="btn-box-done" style="display:none;">Done</button>
         </div>
       </div>
     </div>

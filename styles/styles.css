@@ -847,6 +847,52 @@ header {
   box-shadow: 0 0 24px rgba(184,41,255,0.5);
 }
 
+/* Buy-pack / buy-box button row under the pack. */
+.buy-extra-btns {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.buy-extra-btns .keep-sealed-btn { margin-top: 14px; }
+.buy-box-btn {
+  margin-top: 14px;
+  font-size: 0.6rem;
+  padding: 10px 18px;
+  border-color: var(--r-ultra);
+  color: var(--r-ultra);
+  background: rgba(255,215,0,0.08);
+}
+.buy-box-btn:hover {
+  background: var(--r-ultra);
+  color: #111;
+  box-shadow: 0 0 24px rgba(255,215,0,0.5);
+}
+
+/* Booster-box tiles + the rip session controls. */
+.box-card {
+  border-color: var(--r-ultra);
+  box-shadow: 0 0 16px rgba(255,215,0,0.4);
+}
+.box-meta {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--muted);
+  text-align: center;
+}
+.box-actions { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.box-action { font-size: 0.5rem; padding: 7px 8px; width: 100%; }
+.box-action.rip-box { border-color: var(--r-ultra); color: var(--r-ultra); }
+.box-action.unbox { border-color: var(--neon-green); color: var(--neon-green); }
+.box-rip-head {
+  margin-top: 14px;
+  font-family: 'Bungee', sans-serif;
+  font-size: 0.7rem;
+  text-align: center;
+  color: var(--r-ultra);
+  text-transform: uppercase;
+}
+
 .binder-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
