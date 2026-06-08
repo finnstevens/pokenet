@@ -10,7 +10,7 @@
 import { RARITY_FALLBACK } from './prices.js';
 
 const API = 'https://api.pokemontcg.io/v2/cards';
-const CACHE_PREFIX = 'pokepack.set.v3.'; // bump to recompute prices (now averaged across variants)
+const CACHE_PREFIX = 'pokepack.set.v4.'; // bump to recompute (v4: GX/VMAX → ultra tiering)
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // refresh prices ~daily
 
 const memo = new Map();      // apiSetId -> normalized cards[]
@@ -31,9 +31,11 @@ export function rarityToTier(rarityStr) {
   if (s.includes('illustration')) return 'holo';
   if (s.includes('ace spec')) return 'ultra';
   if (s.includes('ultra')) return 'ultra';
+  if (s.includes('vmax') || s.includes('vstar')) return 'ultra'; // SWSH big hits (check before holo)
+  if (/\bgx\b/.test(s)) return 'ultra';            // SM "Rare Holo GX" (before holo)
   if (/\bex\b/.test(s)) return 'ultra';            // ex-era "Rare Holo EX"
   if (s.includes('double')) return 'holo';
-  if (s.includes('holo')) return 'holo';           // vintage "Rare Holo"
+  if (s.includes('holo')) return 'holo';           // vintage "Rare Holo", SWSH "Rare Holo V"
   if (s.includes('uncommon')) return 'uncommon';
   if (s.includes('rare')) return 'rare';
   if (s.includes('common')) return 'common';

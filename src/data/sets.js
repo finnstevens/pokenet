@@ -275,6 +275,73 @@ export const SETS = [
       '--pack-c1': '#f5f5f5', '--pack-c2': '#1a1a1a', '--pack-c3': '#4f9bff', '--pack-c4': '#f5f5f5',
     },
   },
+  {
+    id: 'hiddenfates',
+    apiSetId: 'sm115',
+    name: 'Hidden Fates',
+    blurb: 'SM 2019. Shiny-soaked GX chase. (Base set — Shiny Vault not included.)',
+    cost: 35, sealedPrice: 35, // real sealed single-pack market price (popular set)
+    cooldownMs: 0,
+    pack: {
+      slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
+      // hits: Rare, Rare Holo, Rare Holo GX (ultra), Rare Rainbow (secret).
+      rareSlot: [
+        { tier: 'rare',   w: 50 },
+        { tier: 'holo',   w: 30 },
+        { tier: 'ultra',  w: 15 },
+        { tier: 'secret', w: 5 },
+      ],
+    },
+    theme: {
+      '--accent': '#9fe8e0', '--accent-glow': 'rgba(120,230,220,0.45)',
+      '--pack-c1': '#cfd8e8', '--pack-c2': '#7b2ff7', '--pack-c3': '#00f0ff', '--pack-c4': '#cfd8e8',
+    },
+  },
+  {
+    id: 'championspath',
+    apiSetId: 'swsh35',
+    name: "Champion's Path",
+    blurb: 'SWSH 2020. Premium. Charizard VMAX & the rainbow secret chase.',
+    cost: 28, sealedPrice: 28, // real sealed single-pack market price
+    cooldownMs: 0,
+    pack: {
+      // No plain-rare tier in this set — every hit is Rare Holo or better.
+      slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
+      // hits: Rare Holo / Rare Holo V (holo), VMAX + Rare Ultra (ultra), Rainbow + Secret (secret).
+      rareSlot: [
+        { tier: 'holo',   w: 60 },
+        { tier: 'ultra',  w: 30 },
+        { tier: 'secret', w: 10 },
+      ],
+    },
+    theme: {
+      '--accent': '#ffd24a', '--accent-glow': 'rgba(255,210,74,0.45)',
+      '--pack-c1': '#b06fd6', '--pack-c2': '#ffd24a', '--pack-c3': '#ff7ad9', '--pack-c4': '#b06fd6',
+    },
+  },
+  {
+    id: 'unifiedminds',
+    apiSetId: 'sm11',
+    name: 'Unified Minds',
+    blurb: 'SM 2019. Huge 260-card set. Mewtwo & Mew GX, Rainbow rares.',
+    cost: 10, sealedPrice: 10, // real sealed single-pack market price
+    box: { packs: 36, price: 300 }, // real sealed booster-box market price (approx)
+    cooldownMs: 0,
+    pack: {
+      slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
+      // hits: Rare, Rare Holo, Rare Holo GX + Rare Ultra (ultra), Rare Rainbow (secret).
+      rareSlot: [
+        { tier: 'rare',   w: 50 },
+        { tier: 'holo',   w: 30 },
+        { tier: 'ultra',  w: 15 },
+        { tier: 'secret', w: 5 },
+      ],
+    },
+    theme: {
+      '--accent': '#5cc8ff', '--accent-glow': 'rgba(92,200,255,0.45)',
+      '--pack-c1': '#3b2a6b', '--pack-c2': '#ff5db1', '--pack-c3': '#5cc8ff', '--pack-c4': '#1a1030',
+    },
+  },
 ];
 
 export function getSet(id) {

@@ -68,7 +68,7 @@ picker, binder, shop.
 
 ## Real-card system (`services/cards.js`) — the core
 - `loadSet(apiSetId)`: ONE request `GET pokemontcg.io/v2/cards?q=set.id:<id>&pageSize=250`,
-  normalizes each card, caches in memory + `localStorage` key `pokepack.set.v3.<id>`
+  normalizes each card, caches in memory + `localStorage` key `pokepack.set.v4.<id>`
   (24h TTL). Falls back to any cached copy on network failure. All sets are
   pre-warmed on boot (`pack.js`) so the picker is correct immediately.
 - Normalized card: `{ uid, name, number, rarity, tier, setId, setName, image, price, prices }`.
@@ -81,7 +81,7 @@ picker, binder, shop.
 - **Card price = the average of the card's variant market prices** (TCGplayer
   `market`, never `low`). The reverse-holo slot re-prices to `reverseHolofoil`
   in `packs.js`. Missing prices fall back to `RARITY_FALLBACK[tier]`.
-- **If you change normalization/pricing, bump `CACHE_PREFIX`** (`.v3.` → `.v4.`)
+- **If you change normalization/pricing, bump `CACHE_PREFIX`** (`.v4.` → `.v5.`)
   so cached set data is recomputed.
 
 ## Pricing model (two different things — don't conflate)
@@ -132,7 +132,7 @@ picker, binder, shop.
 - `pokepack.save.v2` — the save (money, binder by uid, sealed, wishlist, locked,
   pendingSales, achievements, timers, UI tab/filter/sort). A migration maps the
   old `shards` field → `money`.
-- `pokepack.set.v3.<apiSetId>` — cached set card data (24h TTL).
+- `pokepack.set.v4.<apiSetId>` — cached set card data (24h TTL).
 
 ## Hosting / deploy
 - Repo: **github.com/finnstevens/pokenet** (`main`). `gh` CLI at `~/.local/bin/gh`.
