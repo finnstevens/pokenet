@@ -5,10 +5,8 @@
      anytime from here. */
 
 import { state, isWished, isLocked, setBinderTab } from '../state/store.js';
-import { SETS, getSet } from '../data/sets.js';
+import { SETS } from '../data/sets.js';
 import { formatPrice } from '../services/prices.js';
-import { packAverageValue } from '../game/packs.js';
-import { loadedSet } from '../services/cards.js';
 import { showCard } from './modal.js';
 import { openFromSealed } from './pack.js';
 
@@ -115,8 +113,7 @@ function renderSealed() {
 
   sealedGrid.innerHTML = held.map(set => {
     const count = state.sealed[set.id];
-    const cards = loadedSet(set.apiSetId);
-    const each = cards ? packAverageValue(set, cards) : set.cost;
+    const each = set.sealedPrice ?? set.cost; // sealed-pack market value
     return `
       <div class="sealed-card" data-rarity="secret" title="${set.name} · ${count} sealed">
         <div class="count-badge">x${count}</div>

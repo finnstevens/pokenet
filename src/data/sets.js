@@ -17,7 +17,8 @@ export const SETS = [
     apiSetId: 'sv8pt5',
     name: 'Prismatic Evolutions',
     blurb: 'FREE pack · one every 2min. Eeveelutions & the SIR chase.',
-    cost: 0,
+    cost: 0,             // free (cooldown-gated)
+    sealedPrice: 12,     // real sealed single-pack market price
     cooldownMs: 120_000,
     pack: {
       slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
@@ -38,7 +39,7 @@ export const SETS = [
     apiSetId: 'sv3pt5',
     name: '151',
     blurb: 'Kanto nostalgia. Chase the Charizard ex SIR.',
-    cost: 23, // fallback; actual price = average pack value, computed from live data
+    cost: 12, sealedPrice: 12, // real sealed single-pack market price
     cooldownMs: 0,
     pack: {
       slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
@@ -59,7 +60,7 @@ export const SETS = [
     apiSetId: 'sv8',
     name: 'Surging Sparks',
     blurb: 'Electric-charged. Pikachu ex & big Illustration Rares.',
-    cost: 7,
+    cost: 5, sealedPrice: 5, // real sealed single-pack market price
     cooldownMs: 0,
     pack: {
       slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
@@ -80,7 +81,7 @@ export const SETS = [
     apiSetId: 'sv4pt5',
     name: 'Paldean Fates',
     blurb: 'Shiny vault. Stuffed with shiny pulls + chase SIRs.',
-    cost: 18,
+    cost: 6, sealedPrice: 6, // real sealed single-pack market price
     cooldownMs: 0,
     pack: {
       // shiny-heavy set: a dedicated shiny-friendly hit + a rare slot
@@ -102,7 +103,7 @@ export const SETS = [
     apiSetId: 'swsh7',
     name: 'Evolving Skies',
     blurb: 'Eeveelution alt arts. Chase the Moonbreon (Umbreon VMAX).',
-    cost: 22, // fallback; actual price = average pack value, computed from live data
+    cost: 15, sealedPrice: 15, // real sealed single-pack market price
     cooldownMs: 0,
     pack: {
       slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
@@ -123,7 +124,7 @@ export const SETS = [
     apiSetId: 'sv3',
     name: 'Obsidian Flames',
     blurb: 'Terastal Charizard & Dragonite. Dark-fire chase cards.',
-    cost: 6, // fallback; actual price = average pack value, computed from live data
+    cost: 5, sealedPrice: 5, // real sealed single-pack market price
     cooldownMs: 0,
     pack: {
       slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
@@ -144,7 +145,7 @@ export const SETS = [
     apiSetId: 'swsh12pt5',
     name: 'Crown Zenith',
     blurb: 'Galarian Gallery era. Stacked pull rates, big hits.',
-    cost: 6, // fallback; actual price = average pack value, computed from live data
+    cost: 10, sealedPrice: 10, // real sealed single-pack market price
     cooldownMs: 0,
     pack: {
       slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
@@ -165,7 +166,7 @@ export const SETS = [
     apiSetId: 'base1',
     name: 'Base Set',
     blurb: 'Vintage 1999. The original — chase the holo Charizard.',
-    cost: 46, // fallback; actual price = average pack value, computed from live data
+    cost: 350, sealedPrice: 350, // real sealed (Unlimited) single-pack market price
     cooldownMs: 0,
     pack: {
       // vintage: no reverse-holo slot; 7 commons/uncommons + 1 rare slot.
@@ -186,7 +187,7 @@ export const SETS = [
     apiSetId: 'base3',
     name: 'Fossil',
     blurb: 'Vintage 1999. Premium. Holo Articuno / Aerodactyl / Lapras chase.',
-    cost: 65,
+    cost: 110, sealedPrice: 110, // real sealed (Unlimited) single-pack market price
     cooldownMs: 0,
     pack: {
       // vintage packs had no reverse-holo slot; 7 commons/uncommons + 1 rare slot.

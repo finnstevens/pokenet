@@ -4,7 +4,7 @@
    paid packs, and reveals the real card images with a rarity-scaled celebration. */
 
 import { SETS, getSet } from '../data/sets.js';
-import { generatePack, bestRarity, packAverageValue } from '../game/packs.js';
+import { generatePack, bestRarity } from '../game/packs.js';
 import { state, addCards, spendMoney, setSelectedSet, markOpened, addSealed, consumeSealed } from '../state/store.js';
 import { cooldownRemaining, formatCooldown } from '../game/economy.js';
 import { loadSet, loadedSet } from '../services/cards.js';
@@ -62,14 +62,10 @@ export function initPack() {
   setInterval(updatePackState, 500);
 }
 
-/* The price of a paid pack = its average value (rounded), computed from the
-   loaded set. Free pack stays free; falls back to the static cost until the
-   set's cards are loaded. */
+/* The price of a pack is its real sealed-pack market price (set in
+   data/sets.js). The free pack stays free. */
 function costOf(set) {
-  if (set.cost === 0) return 0;
-  const cards = loadedSet(set.apiSetId);
-  if (!cards) return set.cost;
-  return Math.max(1, Math.round(packAverageValue(set, cards)));
+  return set.cost;
 }
 
 function setTinyLabel(set) {

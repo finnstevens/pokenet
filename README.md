@@ -56,25 +56,25 @@ Everything (collection, shards, achievements, wishlist, daily + free-pack timers
 is saved to `localStorage` and restored on reload.
 
 ### Sets
-Paid packs are priced at their **average pack value** — the expected total card
-value inside, computed live from real prices (so a pack costs roughly what it's
-worth, and the sell haircut makes opening a net sink rather than free money).
-Approximate prices:
+Each pack costs its **real sealed single-pack market price** (set in
+`src/data/sets.js`; the card API doesn't cover sealed product so these are
+hand-set approximations). Card prices inside are live & exact, so vintage packs
+are a high-buy-in gamble against a big chase. Approximate prices:
 
-| Set | API id | Price |
-|-----|--------|-------|
+| Set | API id | Pack price |
+|-----|--------|-----------|
 | Prismatic Evolutions | `sv8pt5` | **Free** · 1 per 2 min |
-| Obsidian Flames | `sv3` | ~$6 |
-| Crown Zenith | `swsh12pt5` | ~$6 |
-| Surging Sparks | `sv8` | ~$7 |
-| Paldean Fates | `sv4pt5` | ~$18 |
-| Evolving Skies | `swsh7` | ~$22 |
-| 151 | `sv3pt5` | ~$23 |
-| Base Set (vintage 1999) | `base1` | ~$46 |
-| Fossil (vintage 1999) | `base3` | ~$65 |
+| Obsidian Flames | `sv3` | ~$5 |
+| Surging Sparks | `sv8` | ~$5 |
+| Paldean Fates | `sv4pt5` | ~$6 |
+| Crown Zenith | `swsh12pt5` | ~$10 |
+| 151 | `sv3pt5` | ~$12 |
+| Evolving Skies | `swsh7` | ~$15 |
+| Fossil (vintage 1999) | `base3` | ~$110 |
+| Base Set (vintage 1999) | `base1` | ~$350 |
 
-Adding another set is one entry in `src/data/sets.js` (an `apiSetId` + pack
-structure) — the loader handles cards, images, prices, and pricing.
+Adding another set is one entry in `src/data/sets.js` (an `apiSetId`, sealed
+price + pack structure) — the loader handles cards, images, and live prices.
 
 ## Project layout
 
