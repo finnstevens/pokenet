@@ -64,14 +64,18 @@ are a high-buy-in gamble against a big chase. Approximate prices:
 | Set | API id | Pack price |
 |-----|--------|-----------|
 | Prismatic Evolutions | `sv8pt5` | **Free** · 1 per 2 min |
+| Ascended Heroes | `me2pt5` | ~$5 |
 | Obsidian Flames | `sv3` | ~$5 |
 | Surging Sparks | `sv8` | ~$5 |
 | Paldean Fates | `sv4pt5` | ~$6 |
 | Crown Zenith | `swsh12pt5` | ~$10 |
 | 151 | `sv3pt5` | ~$12 |
 | Evolving Skies | `swsh7` | ~$15 |
+| EX Dragon (vintage 2003) | `ex3` | ~$50 |
 | Fossil (vintage 1999) | `base3` | ~$110 |
 | Base Set (vintage 1999) | `base1` | ~$350 |
+
+*(Ascended Heroes is a brand-new set; its live card prices aren't in the data source yet, so its card values are placeholders until they populate.)*
 
 Adding another set is one entry in `src/data/sets.js` (an `apiSetId`, sealed
 price + pack structure) — the loader handles cards, images, and live prices.

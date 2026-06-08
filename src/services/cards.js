@@ -31,6 +31,7 @@ export function rarityToTier(rarityStr) {
   if (s.includes('illustration')) return 'holo';
   if (s.includes('ace spec')) return 'ultra';
   if (s.includes('ultra')) return 'ultra';
+  if (/\bex\b/.test(s)) return 'ultra';            // ex-era "Rare Holo EX"
   if (s.includes('double')) return 'holo';
   if (s.includes('holo')) return 'holo';           // vintage "Rare Holo"
   if (s.includes('uncommon')) return 'uncommon';

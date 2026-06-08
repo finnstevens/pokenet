@@ -162,6 +162,49 @@ export const SETS = [
     },
   },
   {
+    id: 'ascended',
+    apiSetId: 'me2pt5',
+    name: 'Ascended Heroes',
+    blurb: 'Mega Evolution era. Mega Dragonite ex & all-star Megas.',
+    cost: 5, sealedPrice: 5, // real sealed single-pack market price
+    cooldownMs: 0,
+    pack: {
+      // NOTE: this set's card data is preliminary (no live prices yet, no
+      // secret/SIR rarities catalogued) — odds use the tiers that exist.
+      slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
+      rareSlot: [
+        { tier: 'rare',   w: 50 },
+        { tier: 'holo',   w: 35 },
+        { tier: 'ultra',  w: 15 },
+      ],
+    },
+    theme: {
+      '--accent': '#ff2e9a', '--accent-glow': 'rgba(255,46,154,0.45)',
+      '--pack-c1': '#ff2e9a', '--pack-c2': '#39ff14', '--pack-c3': '#ffd700', '--pack-c4': '#00f0ff',
+    },
+  },
+  {
+    id: 'exdragon',
+    apiSetId: 'ex3',
+    name: 'EX Dragon',
+    blurb: 'Vintage 2003. Rayquaza-led dragons; ex & secret-rare chase.',
+    cost: 50, sealedPrice: 50, // real sealed single-pack market price
+    cooldownMs: 0,
+    pack: {
+      slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
+      rareSlot: [
+        { tier: 'rare',   w: 54 },
+        { tier: 'holo',   w: 28 },
+        { tier: 'ultra',  w: 14 },
+        { tier: 'secret', w: 4 },
+      ],
+    },
+    theme: {
+      '--accent': '#ff9800', '--accent-glow': 'rgba(255,152,0,0.5)',
+      '--pack-c1': '#ff9800', '--pack-c2': '#43a047', '--pack-c3': '#ffd700', '--pack-c4': '#e65100',
+    },
+  },
+  {
     id: 'base',
     apiSetId: 'base1',
     name: 'Base Set',
