@@ -5,7 +5,7 @@
 
 import { SETS, getSet } from '../data/sets.js';
 import { generatePack, bestRarity, packAverageValue } from '../game/packs.js';
-import { state, addCards, spendMoney, setSelectedSet, markOpened } from '../state/store.js';
+import { state, addCards, spendMoney, setSelectedSet, markOpened, addSealed, consumeSealed } from '../state/store.js';
 import { cooldownRemaining, formatCooldown } from '../game/economy.js';
 import { loadSet, loadedSet } from '../services/cards.js';
 import { cardInnerHTML } from './card.js';
@@ -32,6 +32,7 @@ export function initPack() {
   $btnFlip = document.getElementById('btn-flip-all');
 
   $pack.addEventListener('click', openPack);
+  document.getElementById('btn-keep-sealed').addEventListener('click', keepSealed);
   $btnNew.addEventListener('click', () => { sfx.playClick(); resetForNewPack(); });
   $btnFlip.addEventListener('click', () => {
     $reveal.querySelectorAll('.card:not(.flipped)').forEach(c => {
@@ -181,7 +182,14 @@ function openPack() {
   }
   if (set.cooldownMs) markOpened(set.id, Date.now());
 
+  doReveal(set, cards);
+}
+
+/* The rip + reveal animation (no cost/gating — callers handle that, including
+   opening a pack you already hold sealed). */
+function doReveal(set, cards) {
   revealing = true;
+  document.getElementById('btn-keep-sealed').style.display = 'none';
   $pack.classList.add('opening');
   sfx.playShake();
 
@@ -204,6 +212,41 @@ function openPack() {
       pendingAchievements = unlocked; // hold toasts until the cards are flipped
     }, 600);
   }, 1500);
+}
+
+/* Buy the selected pack but KEEP it sealed (don't open) — same cost/cooldown
+   gating as opening; adds one to the sealed collection. */
+function keepSealed() {
+  if (revealing) return;
+  const set = getSet(state.selectedSet);
+  if (currentCooldown(set) > 0) return;
+  const cost = costOf(set);
+  if (cost > 0) {
+    if (state.money < cost) {
+      toast('Not enough money', `${set.name} costs $${cost} to keep sealed.`);
+      return;
+    }
+    spendMoney(cost);
+  }
+  if (set.cooldownMs) markOpened(set.id, Date.now());
+  addSealed(set.id);
+  sfx.playClick();
+  toast('Kept sealed', `${set.name} added to your sealed collection (Binder ▸ Sealed).`);
+}
+
+/* Open a pack the player already holds sealed: consume it, jump to the Open
+   tab, and reveal — no further cost. */
+export function openFromSealed(setId) {
+  if (revealing) return;
+  const set = getSet(setId);
+  if ((state.sealed[set.id] || 0) < 1) return;
+  consumeSealed(set.id);
+  document.querySelector('#tabs [data-tab="open"]').click();
+  setSelectedSet(set.id);
+  selectSet(set);
+  const cards = loadedSet(set.apiSetId);
+  if (cards) doReveal(set, cards);
+  else loadSet(set.apiSetId).then(c => doReveal(set, c)).catch(() => toast('Load failed', 'Could not load that set right now.'));
 }
 
 function renderPack(pack) {
@@ -245,5 +288,6 @@ function resetForNewPack() {
   $actions.style.display = 'none';
   $pack.style.display = '';
   $pack.classList.remove('torn', 'opening');
+  document.getElementById('btn-keep-sealed').style.display = '';
   updatePackState();
 }

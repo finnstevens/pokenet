@@ -1,22 +1,45 @@
-/* The collection grid. Real card images + real prices (known synchronously now).
-   Rarity/wishlist filters, text search, several sort orders, and a detail modal
-   on click. Entries are keyed by card uid (a specific printing). */
+/* The binder. Two subtabs:
+   - Pokémon Cards: the singles you've pulled (rarity/wishlist filters, search,
+     sort, detail modal). Entries keyed by card uid.
+   - Pokémon Sealed: booster packs you've bought and kept sealed; open one
+     anytime from here. */
 
-import { state, isWished, isLocked } from '../state/store.js';
+import { state, isWished, isLocked, setBinderTab } from '../state/store.js';
+import { SETS, getSet } from '../data/sets.js';
 import { formatPrice } from '../services/prices.js';
+import { packAverageValue } from '../game/packs.js';
+import { loadedSet } from '../services/cards.js';
 import { showCard } from './modal.js';
+import { openFromSealed } from './pack.js';
 
 const RARITY_ORDER = { secret: 0, ultra: 1, holo: 2, rare: 3, uncommon: 4, common: 5 };
 
-let grid;
+let grid, sealedGrid, subtabs, cardsPane, sealedPane;
 
 export function initBinder() {
   grid = document.getElementById('binder');
+  sealedGrid = document.getElementById('sealed-grid');
+  subtabs = document.getElementById('binder-subtabs');
+  cardsPane = document.getElementById('binder-cards');
+  sealedPane = document.getElementById('binder-sealed');
+
   grid.addEventListener('click', e => {
     const mini = e.target.closest('.mini-card');
     if (!mini) return;
     const entry = state.binder[mini.dataset.uid];
     if (entry) showCard(entry.card);
+  });
+
+  subtabs.addEventListener('click', e => {
+    const tab = e.target.closest('.subtab');
+    if (!tab) return;
+    setBinderTab(tab.dataset.sub);
+  });
+
+  sealedGrid.addEventListener('click', e => {
+    const btn = e.target.closest('.open-sealed');
+    if (!btn) return;
+    openFromSealed(btn.dataset.set);
   });
 }
 
@@ -37,6 +60,17 @@ function sortEntries(list) {
 export function renderBinder() {
   if (!grid) return;
 
+  // Reflect the active subtab.
+  const tab = state.binderTab === 'sealed' ? 'sealed' : 'cards';
+  subtabs.querySelectorAll('.subtab').forEach(t => t.classList.toggle('active', t.dataset.sub === tab));
+  cardsPane.style.display = tab === 'cards' ? '' : 'none';
+  sealedPane.style.display = tab === 'sealed' ? '' : 'none';
+
+  renderCards();
+  renderSealed();
+}
+
+function renderCards() {
   const entries = Object.values(state.binder);
   const q = state.search.trim().toLowerCase();
   let list = entries;
@@ -67,6 +101,32 @@ export function renderBinder() {
           <img src="${c.image}" alt="${c.name}" loading="lazy" onerror="this.classList.add('img-fail')">
         </div>
         ${priceHTML}
+      </div>
+    `;
+  }).join('');
+}
+
+function renderSealed() {
+  const held = SETS.filter(s => (state.sealed[s.id] || 0) > 0);
+  if (held.length === 0) {
+    sealedGrid.innerHTML = `<div class="empty">No sealed packs. In the Open tab, choose “Keep Sealed” to bank a pack here instead of ripping it.</div>`;
+    return;
+  }
+
+  sealedGrid.innerHTML = held.map(set => {
+    const count = state.sealed[set.id];
+    const cards = loadedSet(set.apiSetId);
+    const each = cards ? packAverageValue(set, cards) : set.cost;
+    return `
+      <div class="sealed-card" data-rarity="secret" title="${set.name} · ${count} sealed">
+        <div class="count-badge">x${count}</div>
+        <div class="sealed-art">
+          <img src="./assets/packs/${set.id}.png" alt="${set.name}" loading="lazy"
+               onerror="this.classList.add('img-fail')">
+        </div>
+        <div class="sealed-name">${set.name}</div>
+        <div class="price-tag">${formatPrice(each)} ea</div>
+        <button class="btn open-sealed" data-set="${set.id}">Open one</button>
       </div>
     `;
   }).join('');

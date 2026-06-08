@@ -21,6 +21,7 @@ function freshState() {
     pendingSales: [],    // [{ id, card, value, listedAt, readyAt }]
     wishlist: [],        // [uid]
     locked: [],          // [uid] — protected from selling
+    sealed: {},          // set.id -> count of sealed packs held (unopened)
     achievements: [],    // [achievementId]
     lastDailyClaim: null,
     lastOpen: {},        // setId -> timestamp (for cooldown-gated sets)
@@ -28,6 +29,7 @@ function freshState() {
 
     // UI-only
     currentFilter: 'all',
+    binderTab: 'cards',  // 'cards' | 'sealed'
     sort: 'rarity',
     search: '',
   };
@@ -37,8 +39,8 @@ export const state = freshState();
 
 /* ---- persistence ---- */
 const PERSIST_KEYS = [
-  'money', 'packsOpened', 'totalCards', 'binder', 'pendingSales', 'wishlist', 'locked',
-  'achievements', 'lastDailyClaim', 'lastOpen', 'selectedSet', 'currentFilter', 'sort',
+  'money', 'packsOpened', 'totalCards', 'binder', 'pendingSales', 'wishlist', 'locked', 'sealed',
+  'achievements', 'lastDailyClaim', 'lastOpen', 'selectedSet', 'currentFilter', 'binderTab', 'sort',
 ];
 
 let saveTimer = null;
@@ -240,5 +242,19 @@ export function isLocked(uid) { return state.locked.includes(uid); }
 
 export function setSelectedSet(id) { state.selectedSet = id; commit(); }
 export function setFilter(f)       { state.currentFilter = f; commit(); }
+export function setBinderTab(t)    { state.binderTab = t; commit(); }
+
+/* ---- sealed packs (held, unopened) ---- */
+export function addSealed(setId) {
+  state.sealed[setId] = (state.sealed[setId] || 0) + 1;
+  commit();
+}
+export function consumeSealed(setId) {
+  if (!state.sealed[setId]) return false;
+  state.sealed[setId]--;
+  if (state.sealed[setId] <= 0) delete state.sealed[setId];
+  commit();
+  return true;
+}
 export function setSort(s)         { state.sort = s; commit(); }
 export function setSearch(q)       { state.search = q; notify(); }

@@ -69,6 +69,7 @@
         </div>
       </div>
       <p class="hint" id="hint">▼ CLICK PACK TO OPEN ▼</p>
+      <button class="btn keep-sealed-btn" id="btn-keep-sealed">Keep Sealed</button>
       <div class="cards-reveal" id="reveal"></div>
       <div class="actions" id="actions" style="display:none;">
         <button class="btn primary" id="btn-new">Open Another</button>
@@ -81,6 +82,13 @@
   <section class="view" id="view-binder">
     <div class="binder-head">
       <h2 class="section-title">// Your Binder</h2>
+      <div class="binder-subtabs" id="binder-subtabs">
+        <button class="subtab active" data-sub="cards">Pokémon Cards</button>
+        <button class="subtab" data-sub="sealed">Pokémon Sealed</button>
+      </div>
+    </div>
+
+    <div id="binder-cards">
       <div class="filters" id="filters">
         <button class="filter active" data-filter="all">All</button>
         <button class="filter" data-filter="common">Common</button>
@@ -91,22 +99,29 @@
         <button class="filter" data-filter="secret">Secret</button>
         <button class="filter" data-filter="wishlist">★ Wishlist</button>
       </div>
+      <div class="binder-controls">
+        <input type="text" class="search-box" id="search" placeholder="search by name…" autocomplete="off">
+        <select class="sort-select" id="sort">
+          <option value="rarity">Sort: Rarity</option>
+          <option value="name">Sort: Name</option>
+          <option value="value">Sort: Value</option>
+          <option value="count">Sort: Owned</option>
+          <option value="dex">Sort: Set & №</option>
+        </select>
+      </div>
+      <p style="font-family:'Press Start 2P',monospace;font-size:0.5rem;color:var(--muted);letter-spacing:0.15em;margin-bottom:18px;opacity:0.7;">
+        ▸ market prices via pokemontcg.io · tcgplayer data · indicative only · click a card for details
+      </p>
+      <div class="binder-grid" id="binder">
+        <div class="empty">No cards yet. Rip a pack to start collecting.</div>
+      </div>
     </div>
-    <div class="binder-controls">
-      <input type="text" class="search-box" id="search" placeholder="search by name…" autocomplete="off">
-      <select class="sort-select" id="sort">
-        <option value="rarity">Sort: Rarity</option>
-        <option value="name">Sort: Name</option>
-        <option value="value">Sort: Value</option>
-        <option value="count">Sort: Owned</option>
-        <option value="dex">Sort: Set & №</option>
-      </select>
-    </div>
-    <p style="font-family:'Press Start 2P',monospace;font-size:0.5rem;color:var(--muted);letter-spacing:0.15em;margin-bottom:18px;opacity:0.7;">
-      ▸ market prices via pokemontcg.io · tcgplayer data · indicative only · click a card for details
-    </p>
-    <div class="binder-grid" id="binder">
-      <div class="empty">No cards yet. Rip a pack to start collecting.</div>
+
+    <div id="binder-sealed" style="display:none;">
+      <p style="font-family:'Press Start 2P',monospace;font-size:0.5rem;color:var(--muted);letter-spacing:0.15em;margin-bottom:18px;opacity:0.7;">
+        ▸ booster packs you've kept sealed · open one anytime
+      </p>
+      <div class="binder-grid" id="sealed-grid"></div>
     </div>
   </section>
 
