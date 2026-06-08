@@ -155,23 +155,35 @@ export function listForSale(uid, now) {
   return sale;
 }
 
-/* Instantly sell every unlocked common & uncommon (all copies) for money —
-   a one-press way to clear out the junk. Returns { count, total }. */
-export function bulkSellCommonsUncommons() {
+/* List every unlocked common & uncommon (all copies) onto the sale queue in one
+   press — they sell one at a time like any other listing (not an instant
+   payout). Returns { count, total } where total is the estimated proceeds. */
+export function bulkSellCommonsUncommons(now) {
   let count = 0, total = 0;
   for (const [uid, e] of Object.entries(state.binder)) {
     if ((e.card.tier === 'common' || e.card.tier === 'uncommon') && !state.locked.includes(uid)) {
-      total += sellValue(e.card) * e.count;
-      count += e.count;
+      const card = e.card;
+      const value = sellValue(card);
+      for (let i = 0; i < e.count; i++) {
+        const duration = sellDurationMs(card);
+        const isFront = state.pendingSales.length === 0; // only the head ticks; rest queue
+        state.pendingSales.push({
+          id: `${now}-${count}-${Math.floor(Math.random() * 1e6)}`,
+          card,
+          value,
+          duration,
+          listedAt: isFront ? now : null,
+          readyAt: isFront ? now + duration : null,
+        });
+        total += value;
+        count++;
+      }
       delete state.binder[uid];
     }
   }
   if (!count) return { count: 0, total: 0 };
-  total = +total.toFixed(2);
-  state.money = +(state.money + total).toFixed(2);
-  checkAchievements(state);
   commit();
-  return { count, total };
+  return { count, total: +total.toFixed(2) };
 }
 
 /* Advance the sale queue: activate the front sale if it hasn't started, and

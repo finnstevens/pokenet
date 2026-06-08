@@ -20,8 +20,8 @@ export function initShop() {
   bulkBtn = document.getElementById('bulk-sell-btn');
 
   bulkBtn.addEventListener('click', () => {
-    const { count, total } = bulkSellCommonsUncommons();
-    if (count > 0) { playCoin(); toast('Bulk sold', `${count} cards → +${formatPrice(total)}`); }
+    const { count, total } = bulkSellCommonsUncommons(Date.now());
+    if (count > 0) { playClick(); toast('Listed', `${count} cards queued · ~${formatPrice(total)} total`); }
     else toast('Nothing to sell', 'No unlocked commons or uncommons.');
     renderShop();
   });
