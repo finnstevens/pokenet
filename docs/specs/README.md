@@ -11,4 +11,5 @@ Naming: `YYYY-MM-DD-slug.md`. Status: Draft → Approved → Built → Verified 
 
 | Date | Spec | Status |
 |------|------|--------|
-| 2026-06-08 | [Booster Boxes](2026-06-08-booster-boxes.md) | Verified |
+| 2026-06-08 | [Booster Boxes](2026-06-08-booster-boxes.md) | Shipped |
+| 2026-06-08 | [Add the Black & White set](2026-06-08-black-and-white-set.md) | Verified |

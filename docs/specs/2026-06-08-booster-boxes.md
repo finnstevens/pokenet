@@ -2,7 +2,7 @@
 title: Booster Boxes
 date: 2026-06-08
 slug: booster-boxes
-status: Verified   # Draft → Approved → Built → Verified → Shipped
+status: Shipped   # Draft → Approved → Built → Verified → Shipped
 owner: finn
 ---
 
@@ -221,4 +221,4 @@ _Resolved at Gate 1 — see Decisions. None outstanding._
 All acceptance criteria checked. **Not yet committed/pushed** (awaiting the go-ahead).
 
 ## Changelog
-- _(pending — not committed yet)_
+- `d192ab2` — Add booster boxes (pushed to main; deployed to GitHub Pages ✓)

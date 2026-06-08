@@ -252,6 +252,29 @@ export const SETS = [
       '--pack-c1': '#d9b061', '--pack-c2': '#8a6d4b', '--pack-c3': '#3fb6a8', '--pack-c4': '#d9b061',
     },
   },
+  {
+    id: 'blackwhite',
+    apiSetId: 'bw1',
+    name: 'Black & White',
+    blurb: 'Vintage 2011. Reshiram & Zekrom — the first-ever Full Art ultras.',
+    cost: 22, sealedPrice: 22, // real sealed single-pack market price
+    box: { packs: 36, price: 520 }, // real sealed booster-box market price (approx)
+    cooldownMs: 0,
+    pack: {
+      slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
+      // bw1 hits: Rare Holo, Rare Ultra (Full Arts), and one Rare Secret.
+      rareSlot: [
+        { tier: 'rare',   w: 52 },
+        { tier: 'holo',   w: 30 },
+        { tier: 'ultra',  w: 13 },
+        { tier: 'secret', w: 5 },
+      ],
+    },
+    theme: {
+      '--accent': '#cfe3ff', '--accent-glow': 'rgba(120,180,255,0.45)',
+      '--pack-c1': '#f5f5f5', '--pack-c2': '#1a1a1a', '--pack-c3': '#4f9bff', '--pack-c4': '#f5f5f5',
+    },
+  },
 ];
 
 export function getSet(id) {
