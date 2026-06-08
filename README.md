@@ -56,15 +56,21 @@ Everything (collection, shards, achievements, wishlist, daily + free-pack timers
 is saved to `localStorage` and restored on reload.
 
 ### Sets
-| Set | API id | Cost |
-|-----|--------|------|
-| Prismatic Evolutions | `sv8pt5` | **Free** · 60s cooldown |
-| 151 | `sv3pt5` | 220 ⬡ |
-| Surging Sparks | `sv8` | 260 ⬡ |
-| Paldean Fates | `sv4pt5` | 320 ⬡ |
+Paid packs are priced at their **average pack value** — the expected total card
+value inside, computed live from real prices (so a pack costs roughly what it's
+worth, and the sell haircut makes opening a net sink rather than free money).
+Approximate prices:
 
-Adding another set is one entry in `src/data/sets.js` (an `apiSetId` + cost +
-pack structure) — the loader handles the rest.
+| Set | API id | Price |
+|-----|--------|-------|
+| Prismatic Evolutions | `sv8pt5` | **Free** · 1 per 2 min |
+| Surging Sparks | `sv8` | ~$7 |
+| Paldean Fates | `sv4pt5` | ~$18 |
+| 151 | `sv3pt5` | ~$23 |
+| Fossil (vintage 1999) | `base3` | ~$65 |
+
+Adding another set is one entry in `src/data/sets.js` (an `apiSetId` + pack
+structure) — the loader handles cards, images, prices, and pricing.
 
 ## Project layout
 

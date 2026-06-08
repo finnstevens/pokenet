@@ -38,7 +38,7 @@ export const SETS = [
     apiSetId: 'sv3pt5',
     name: '151',
     blurb: 'Kanto nostalgia. Chase the Charizard ex SIR.',
-    cost: 6,
+    cost: 23, // fallback; actual price = average pack value, computed from live data
     cooldownMs: 0,
     pack: {
       slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
@@ -59,7 +59,7 @@ export const SETS = [
     apiSetId: 'sv8',
     name: 'Surging Sparks',
     blurb: 'Electric-charged. Pikachu ex & big Illustration Rares.',
-    cost: 5,
+    cost: 7,
     cooldownMs: 0,
     pack: {
       slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
@@ -80,7 +80,7 @@ export const SETS = [
     apiSetId: 'sv4pt5',
     name: 'Paldean Fates',
     blurb: 'Shiny vault. Stuffed with shiny pulls + chase SIRs.',
-    cost: 8,
+    cost: 18,
     cooldownMs: 0,
     pack: {
       // shiny-heavy set: a dedicated shiny-friendly hit + a rare slot
@@ -102,7 +102,7 @@ export const SETS = [
     apiSetId: 'base3',
     name: 'Fossil',
     blurb: 'Vintage 1999. Premium. Holo Articuno / Aerodactyl / Lapras chase.',
-    cost: 35,
+    cost: 65,
     cooldownMs: 0,
     pack: {
       // vintage packs had no reverse-holo slot; 7 commons/uncommons + 1 rare slot.

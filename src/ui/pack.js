@@ -4,9 +4,9 @@
    paid packs, and reveals the real card images with a rarity-scaled celebration. */
 
 import { SETS, getSet } from '../data/sets.js';
-import { generatePack, bestRarity } from '../game/packs.js';
+import { generatePack, bestRarity, packAverageValue } from '../game/packs.js';
 import { state, addCards, spendMoney, setSelectedSet, markOpened } from '../state/store.js';
-import { canAfford, cooldownRemaining, formatCooldown } from '../game/economy.js';
+import { cooldownRemaining, formatCooldown } from '../game/economy.js';
 import { loadSet, loadedSet } from '../services/cards.js';
 import { cardInnerHTML } from './card.js';
 import { renderStats } from './stats.js';
@@ -50,8 +50,30 @@ export function initPack() {
 
   selectSet(getSet(state.selectedSet));
 
+  // Pre-warm every set so the picker shows real averaged prices (not the static
+  // fallback) and updates as each loads. Cached after the first fetch.
+  SETS.forEach(s => {
+    if (!loadedSet(s.apiSetId)) loadSet(s.apiSetId).then(() => renderPicker()).catch(() => {});
+  });
+
   // Live ticker for the free-pack cooldown countdown.
   setInterval(updatePackState, 500);
+}
+
+/* The price of a paid pack = its average value (rounded), computed from the
+   loaded set. Free pack stays free; falls back to the static cost until the
+   set's cards are loaded. */
+function costOf(set) {
+  if (set.cost === 0) return 0;
+  const cards = loadedSet(set.apiSetId);
+  if (!cards) return set.cost;
+  return Math.max(1, Math.round(packAverageValue(set, cards)));
+}
+
+function setTinyLabel(set) {
+  $tiny.textContent = set.cost === 0
+    ? `FREE · 1 PER ${formatCooldown(set.cooldownMs)}`
+    : `$${costOf(set)}`;
 }
 
 /* Apply a set's theme + labels and ensure its cards are loaded. */
@@ -62,14 +84,14 @@ function selectSet(set) {
   $logo.src = `https://images.pokemontcg.io/${set.apiSetId}/logo.png`;
   $logo.alt = set.name;
   $fallback.textContent = set.name;
-  $tiny.textContent = set.cost === 0 ? `FREE · 1 PER ${formatCooldown(set.cooldownMs)}` : `$${set.cost}`;
+  setTinyLabel(set);
   Object.entries(set.theme).forEach(([k, v]) => $pack.style.setProperty(k, v));
   renderPicker();
   updatePackState();
 
   if (!loadedSet(set.apiSetId)) {
     loadSet(set.apiSetId)
-      .then(() => { renderPicker(); updatePackState(); })
+      .then(() => { setTinyLabel(set); renderPicker(); updatePackState(); })
       .catch(() => { updatePackState(); });
   }
 }
@@ -78,8 +100,9 @@ export function renderPicker() {
   if (!$picker) return;
   $picker.innerHTML = SETS.map(set => {
     const ready = !!loadedSet(set.apiSetId);
-    const afford = canAfford(state.money, set);
-    const costLabel = set.cost === 0 ? 'FREE' : `$${set.cost}`;
+    const cost = costOf(set);
+    const afford = cost === 0 || state.money >= cost;
+    const costLabel = cost === 0 ? 'FREE' : `$${cost}`;
     return `
       <div class="pack-option ${set.id === state.selectedSet ? 'selected' : ''}"
            data-set="${set.id}"
@@ -118,14 +141,15 @@ function updatePackState() {
     return;
   }
 
-  if (set.cost > 0 && !canAfford(state.money, set)) {
+  const cost = costOf(set);
+  if (cost > 0 && state.money < cost) {
     $pack.classList.add('disabled');
-    $hint.textContent = `NEED $${set.cost} — SELL CARDS OR CLAIM DAILY`;
+    $hint.textContent = `NEED $${cost} — SELL CARDS OR CLAIM DAILY`;
     return;
   }
 
   $pack.classList.remove('disabled');
-  $hint.textContent = set.cost === 0 ? '▼ CLICK TO OPEN — FREE ▼' : `▼ CLICK TO OPEN — $${set.cost} ▼`;
+  $hint.textContent = cost === 0 ? '▼ CLICK TO OPEN — FREE ▼' : `▼ CLICK TO OPEN — $${cost} ▼`;
 }
 
 function openPack() {
@@ -137,12 +161,13 @@ function openPack() {
 
   if (currentCooldown(set) > 0) return; // gated; countdown shown in hint
 
-  if (set.cost > 0) {
-    if (!canAfford(state.money, set)) {
-      toast('Not enough money', `${set.name} costs $${set.cost}. Sell cards or claim your daily reward.`);
+  const cost = costOf(set);
+  if (cost > 0) {
+    if (state.money < cost) {
+      toast('Not enough money', `${set.name} costs $${cost}. Sell cards or claim your daily reward.`);
       return;
     }
-    spendMoney(set.cost);
+    spendMoney(cost);
   }
   if (set.cooldownMs) markOpened(set.id, Date.now());
 

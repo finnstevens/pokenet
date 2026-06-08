@@ -10,7 +10,7 @@
 import { RARITY_FALLBACK } from './prices.js';
 
 const API = 'https://api.pokemontcg.io/v2/cards';
-const CACHE_PREFIX = 'pokepack.set.v2.'; // bump to invalidate caches with old (foil-first) prices
+const CACHE_PREFIX = 'pokepack.set.v3.'; // bump to recompute prices (now averaged across variants)
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // refresh prices ~daily
 
 const memo = new Map();      // apiSetId -> normalized cards[]
@@ -39,28 +39,16 @@ export function rarityToTier(rarityStr) {
   return 'rare';
 }
 
-/* Pick the price of the variant that matches what the card actually IS.
-   Base-rarity cards (common/uncommon/rare) are priced at their plain `normal`
-   printing — NOT the reverse-holo, which trades at a premium and would wildly
-   overprice an ordinary pull. Holo/ultra/secret cards use their foil price.
-   (A card pulled in the reverse-holo slot is re-priced to reverseHolofoil in
-   game/packs.js — there the premium is correct.) */
-const FOIL_FIRST = ['holofoil', 'unlimitedHolofoil', '1stEditionHolofoil', 'reverseHolofoil', 'normal', 'unlimited', '1stEditionNormal'];
-const BASE_FIRST = ['normal', 'unlimited', '1stEditionNormal', 'reverseHolofoil', 'holofoil', 'unlimitedHolofoil', '1stEditionHolofoil'];
-const FOIL_TIERS = new Set(['holo', 'ultra', 'secret']);
-
-function bestVariantPrice(prices, tier) {
-  if (!prices) return null;
-  const order = FOIL_TIERS.has(tier) ? FOIL_FIRST : BASE_FIRST;
-  const tryGet = v => {
-    const p = prices[v];
-    if (!p) return null;
-    const val = p.market ?? p.mid ?? null;
-    return val != null ? { price: val, variant: v } : null;
-  };
-  for (const v of order) { const r = tryGet(v); if (r) return r; }
-  for (const v of Object.keys(prices)) { const r = tryGet(v); if (r) return r; }
-  return null;
+/* The canonical price is the AVERAGE of the card's variant market prices, not
+   the cheapest single variant. Each variant's own figure is TCGplayer's
+   "market" (a rolling average of real sales), so this blends, e.g., a card's
+   normal and reverse-holo printings into one representative value rather than
+   showing only the lowest. (A card pulled specifically in the reverse-holo slot
+   is still priced at its reverseHolofoil figure in game/packs.js.) */
+function averagePrice(variantMap) {
+  const vals = Object.values(variantMap);
+  if (!vals.length) return null;
+  return vals.reduce((a, b) => a + b, 0) / vals.length;
 }
 
 /* Variant -> market price, for the slots that want a specific variant
@@ -79,8 +67,8 @@ function variantPrices(prices) {
 export function normalizeCard(c) {
   const tier = rarityToTier(c.rarity);
   const prices = variantPrices(c.tcgplayer?.prices);
-  const best = bestVariantPrice(c.tcgplayer?.prices, tier);
-  const price = best?.price ?? RARITY_FALLBACK[tier] ?? 0.25;
+  const avg = averagePrice(prices);
+  const price = avg != null ? +avg.toFixed(2) : (RARITY_FALLBACK[tier] ?? 0.25);
   return {
     uid: c.id,                                   // e.g. "sv8pt5-6" — unique per printing
     name: c.name,
@@ -90,7 +78,7 @@ export function normalizeCard(c) {
     setId: c.set?.id || '',
     setName: c.set?.name || '',
     image: c.images?.large || c.images?.small || '',
-    price,                                        // canonical market price (USD)
+    price,                                        // avg of variant market prices (USD)
     prices,                                       // variant -> price
   };
 }

@@ -53,3 +53,35 @@ const RANK = { common: 0, uncommon: 1, rare: 2, holo: 3, ultra: 4, secret: 5 };
 export function bestRarity(cards) {
   return cards.reduce((best, c) => (RANK[c.tier] > RANK[best] ? c.tier : best), 'common');
 }
+
+/* Average value of a pack from this set — the expected total card value across
+   its slots, using each tier's average card price and the rare-slot odds. Used
+   to price paid packs at their average worth (not an arbitrary cheap number). */
+function avgPriceOfTier(cards, tier) {
+  const pool = cards.filter(c => c.tier === tier);
+  if (!pool.length) return 0;
+  return pool.reduce((s, c) => s + (c.price || 0), 0) / pool.length;
+}
+
+function avgReverseValue(cards) {
+  const pool = cards.filter(c => c.tier === 'common' || c.tier === 'uncommon');
+  if (!pool.length) return 0;
+  const vals = pool.map(c => c.prices?.reverseHolofoil ?? c.price ?? 0);
+  return vals.reduce((a, b) => a + b, 0) / vals.length;
+}
+
+export function packAverageValue(set, cards) {
+  if (!cards || !cards.length) return 0;
+  let ev = 0;
+  for (const slot of set.pack.slots) {
+    if (slot === 'reverse') {
+      ev += avgReverseValue(cards);
+    } else if (slot === 'rare-slot') {
+      const total = set.pack.rareSlot.reduce((s, w) => s + w.w, 0);
+      for (const w of set.pack.rareSlot) ev += (w.w / total) * avgPriceOfTier(cards, w.tier);
+    } else {
+      ev += avgPriceOfTier(cards, slot);
+    }
+  }
+  return ev;
+}
