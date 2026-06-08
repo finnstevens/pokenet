@@ -140,6 +140,48 @@ export const SETS = [
     },
   },
   {
+    id: 'crownzenith',
+    apiSetId: 'swsh12pt5',
+    name: 'Crown Zenith',
+    blurb: 'Galarian Gallery era. Stacked pull rates, big hits.',
+    cost: 6, // fallback; actual price = average pack value, computed from live data
+    cooldownMs: 0,
+    pack: {
+      slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
+      rareSlot: [
+        { tier: 'rare',   w: 44 },
+        { tier: 'holo',   w: 34 },
+        { tier: 'ultra',  w: 17 },
+        { tier: 'secret', w: 5 },
+      ],
+    },
+    theme: {
+      '--accent': '#ffd700', '--accent-glow': 'rgba(255,215,0,0.45)',
+      '--pack-c1': '#ffd700', '--pack-c2': '#00f0ff', '--pack-c3': '#b829ff', '--pack-c4': '#39ff14',
+    },
+  },
+  {
+    id: 'base',
+    apiSetId: 'base1',
+    name: 'Base Set',
+    blurb: 'Vintage 1999. The original — chase the holo Charizard.',
+    cost: 46, // fallback; actual price = average pack value, computed from live data
+    cooldownMs: 0,
+    pack: {
+      // vintage: no reverse-holo slot; 7 commons/uncommons + 1 rare slot.
+      slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'uncommon', 'rare-slot'],
+      // Base Set only has rare + rare-holo as hits.
+      rareSlot: [
+        { tier: 'rare', w: 72 },
+        { tier: 'holo', w: 28 },
+      ],
+    },
+    theme: {
+      '--accent': '#ff7043', '--accent-glow': 'rgba(255,112,67,0.5)',
+      '--pack-c1': '#1565c0', '--pack-c2': '#ff7043', '--pack-c3': '#ffd700', '--pack-c4': '#1565c0',
+    },
+  },
+  {
     id: 'fossil',
     apiSetId: 'base3',
     name: 'Fossil',

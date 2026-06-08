@@ -65,10 +65,12 @@ Approximate prices:
 |-----|--------|-------|
 | Prismatic Evolutions | `sv8pt5` | **Free** · 1 per 2 min |
 | Obsidian Flames | `sv3` | ~$6 |
+| Crown Zenith | `swsh12pt5` | ~$6 |
 | Surging Sparks | `sv8` | ~$7 |
 | Paldean Fates | `sv4pt5` | ~$18 |
 | Evolving Skies | `swsh7` | ~$22 |
 | 151 | `sv3pt5` | ~$23 |
+| Base Set (vintage 1999) | `base1` | ~$46 |
 | Fossil (vintage 1999) | `base3` | ~$65 |
 
 Adding another set is one entry in `src/data/sets.js` (an `apiSetId` + pack
