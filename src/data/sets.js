@@ -342,6 +342,27 @@ export const SETS = [
       '--pack-c1': '#3b2a6b', '--pack-c2': '#ff5db1', '--pack-c3': '#5cc8ff', '--pack-c4': '#1a1030',
     },
   },
+  {
+    id: 'generations',
+    apiSetId: 'g1',
+    name: 'Generations',
+    blurb: 'XY 2016. 20th-anniversary set. Radiant Collection & Rare Holo EX hits.',
+    cost: 18, sealedPrice: 18, // real sealed single-pack market price (anniversary set)
+    cooldownMs: 0,
+    pack: {
+      slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
+      // hits: Rare, Rare Holo, Rare Holo EX + Rare Ultra (ultra). No secret tier in g1.
+      rareSlot: [
+        { tier: 'rare',  w: 52 },
+        { tier: 'holo',  w: 30 },
+        { tier: 'ultra', w: 18 },
+      ],
+    },
+    theme: {
+      '--accent': '#ffd11a', '--accent-glow': 'rgba(255,209,26,0.45)',
+      '--pack-c1': '#ff5a3c', '--pack-c2': '#ffd11a', '--pack-c3': '#ffffff', '--pack-c4': '#ff5a3c',
+    },
+  },
 ];
 
 export function getSet(id) {
