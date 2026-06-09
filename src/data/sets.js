@@ -40,6 +40,7 @@ export const SETS = [
     name: '151',
     blurb: 'Kanto nostalgia. Chase the Charizard ex SIR.',
     cost: 12, sealedPrice: 12, // real sealed single-pack market price
+    box: { packs: 36, price: 400 }, // sealed box (hand-set; 151 is a high-demand set)
     cooldownMs: 0,
     pack: {
       slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
