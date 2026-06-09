@@ -31,6 +31,7 @@ function freshState() {
     graded: [],          // [{ id, uid, card, grade, value, gradedAt }] — finished slabs
     achievements: [],    // [achievementId]
     lastDailyClaim: null,
+    lastWork: null,      // timestamp of the last completed work shift (cooldown)
     lastOpen: {},        // setId -> timestamp (for cooldown-gated sets)
     selectedSet: FREE_SET_ID,
 
@@ -49,7 +50,7 @@ export const state = freshState();
 const PERSIST_KEYS = [
   'money', 'packsOpened', 'totalCards', 'binder', 'pendingSales', 'wishlist', 'locked', 'sealed', 'boxes',
   'sleeves', 'sleeved', 'grading', 'graded',
-  'achievements', 'lastDailyClaim', 'lastOpen', 'selectedSet', 'currentFilter', 'binderTab', 'shopTab', 'sort',
+  'achievements', 'lastDailyClaim', 'lastWork', 'lastOpen', 'selectedSet', 'currentFilter', 'binderTab', 'shopTab', 'sort',
 ];
 
 let saveTimer = null;
@@ -265,6 +266,12 @@ export function processSales(now) {
   checkAchievements(state);
   commit();
   return [done];
+}
+
+/* Record that a work shift just finished (starts the cooldown). */
+export function markWorked(now) {
+  state.lastWork = now;
+  commit();
 }
 
 export function claimDaily(now) {

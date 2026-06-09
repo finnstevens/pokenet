@@ -1519,3 +1519,61 @@ footer {
   .btn { font-size: 0.6rem; padding: 12px 18px; }
   .toast-stack { left: 12px; right: 12px; max-width: none; }
 }
+
+/* ===== Work mini-game (Restock Rush) ===== */
+.work-pane { max-width: 560px; margin: 0 auto; text-align: center; }
+.work-intro { color: var(--muted); font-size: 0.82rem; line-height: 1.6; margin-bottom: 18px; }
+.work-last { font-family: 'Press Start 2P', monospace; font-size: 0.6rem; margin-bottom: 16px; }
+#work-start { font-size: 0.8rem; padding: 14px 28px; }
+#work-start:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.work-hud { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+.work-timer { height: 12px; border-radius: 6px; background: #14142a; overflow: hidden; border: 1px solid #2a2a44; }
+.work-timer span { display: block; height: 100%; width: 100%; background: linear-gradient(90deg, var(--neon-green), var(--neon-yellow)); transition: width 0.05s linear; }
+.work-scoreline { display: flex; justify-content: space-between; font-family: 'Press Start 2P', monospace; font-size: 0.6rem; color: var(--muted); }
+.work-scoreline strong { color: var(--ink); }
+
+.work-card {
+  aspect-ratio: 5/7; width: 200px; margin: 0 auto 18px;
+  border-radius: 10px; border: 3px solid var(--accent, #00f0ff);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  overflow: hidden; position: relative; background: #0a0a1a;
+}
+.work-card img { width: 100%; height: 100%; object-fit: contain; }
+.work-card img.img-fail { opacity: 0; }
+.work-card-synth { font-size: 4rem; color: var(--muted); }
+.work-card-rarity {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: rgba(0,0,0,0.7); color: #fff; font-family: 'Space Mono', monospace;
+  font-size: 0.7rem; padding: 5px; letter-spacing: 0.04em;
+}
+.work-card.flash-good { animation: flashGood 0.3s ease; }
+.work-card.flash-bad  { animation: flashBad 0.3s ease; }
+@keyframes flashGood { 0% { box-shadow: 0 0 0 rgba(57,255,20,0); } 30% { box-shadow: 0 0 30px rgba(57,255,20,0.9); } 100% { box-shadow: 0 0 0 rgba(57,255,20,0); } }
+@keyframes flashBad  { 0% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } 100% { transform: translateX(0); } }
+
+.work-bins { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.work-bin {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 6px; border-radius: 8px; cursor: pointer;
+  border: 2px solid var(--bin); background: color-mix(in srgb, var(--bin) 12%, #0a0a1a);
+  color: #fff; font-family: 'Bungee', sans-serif; transition: transform 0.06s, box-shadow 0.1s;
+}
+.work-bin:hover { transform: translateY(-2px); box-shadow: 0 0 16px var(--bin); }
+.work-bin:active { transform: translateY(0); }
+.bin-key { font-family: 'Press Start 2P', monospace; font-size: 0.55rem; color: var(--bin); }
+.bin-label { font-size: 0.72rem; }
+
+.work-result-title { font-family: 'Bungee', sans-serif; color: var(--neon-yellow); margin-bottom: 16px; }
+.work-result-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 16px; }
+.work-result-stats .item { display: flex; flex-direction: column; gap: 4px; padding: 10px 4px; background: #0a0a1a; border-radius: 8px; border: 1px solid #2a2a44; }
+.work-result-stats .v { font-family: 'Press Start 2P', monospace; font-size: 0.7rem; color: var(--ink); }
+.work-result-stats .l { font-size: 0.6rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.work-cap-note { color: var(--muted); font-size: 0.76rem; margin-bottom: 18px; }
+/* Tint the current work card's border by its rarity (a visual hint). */
+.work-card[data-rarity="common"]   { border-color: var(--r-common); }
+.work-card[data-rarity="uncommon"] { border-color: var(--r-uncommon); }
+.work-card[data-rarity="rare"]     { border-color: var(--r-rare); }
+.work-card[data-rarity="holo"]     { border-color: var(--r-holo); }
+.work-card[data-rarity="ultra"]    { border-color: var(--r-ultra); }
+.work-card[data-rarity="secret"]   { border-color: var(--r-secret); }

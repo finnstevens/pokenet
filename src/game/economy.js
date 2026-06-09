@@ -78,6 +78,14 @@ export function dailyCooldownRemaining(lastClaim, now) {
   return cooldownRemaining(lastClaim, DAILY_COOLDOWN_MS, now);
 }
 
+/* ---- work mini-game (Restock Rush) ---- */
+export const WORK_PAYOUT_CAP = 15;            // max dollars per shift
+export const WORK_COOLDOWN_MS = 3 * 60 * 1000; // 3 min between shifts
+
+export function workCooldownRemaining(lastWork, now) {
+  return cooldownRemaining(lastWork, WORK_COOLDOWN_MS, now);
+}
+
 export function formatCooldown(ms) {
   const totalSec = Math.ceil(ms / 1000);
   if (totalSec < 60) return `${totalSec}s`;

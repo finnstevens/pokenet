@@ -50,6 +50,7 @@
   <nav class="tabs" id="tabs">
     <button class="tab active" data-tab="shop">Shop</button>
     <button class="tab" data-tab="binder">Binder</button>
+    <button class="tab" data-tab="work">Work</button>
   </nav>
 
   <!-- BINDER VIEW -->
@@ -190,6 +191,40 @@
           <div class="empty">No cards to sell yet.</div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- WORK VIEW (Restock Rush mini-game) -->
+  <section class="view" id="view-work">
+    <div class="binder-head">
+      <h2 class="section-title">// Day Job — Restock Rush</h2>
+    </div>
+
+    <div id="work-ready" class="work-pane">
+      <p class="work-intro">
+        Sort each card into its rarity bin before the 30-second timer runs out.
+        Build a combo for bonus points — a great shift pays up to $15.
+      </p>
+      <div id="work-status"></div>
+      <button class="btn primary" id="work-start">Start Shift</button>
+    </div>
+
+    <div id="work-playing" class="work-pane" style="display:none;">
+      <div class="work-hud">
+        <div class="work-timer"><span id="work-timer-bar"></span></div>
+        <div class="work-scoreline">
+          <span>SCORE <strong id="work-score">0</strong></span>
+          <span>COMBO <strong id="work-combo">0</strong></span>
+        </div>
+      </div>
+      <div class="work-card" id="work-card"></div>
+      <div class="work-bins" id="work-bins"></div>
+    </div>
+
+    <div id="work-result" class="work-pane" style="display:none;">
+      <h3 class="work-result-title">Shift complete!</h3>
+      <div id="work-result-body"></div>
+      <button class="btn primary" id="work-done">Back</button>
     </div>
   </section>
 

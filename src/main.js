@@ -10,6 +10,7 @@ import { initModal } from './ui/modal.js';
 import { initPack, renderPicker } from './ui/pack.js';
 import { initBinder, renderBinder } from './ui/binder.js';
 import { initShop, renderShop } from './ui/shop.js';
+import { initWork, renderWork } from './ui/work.js';
 import { renderStats } from './ui/stats.js';
 
 /* ---- boot ---- */
@@ -21,6 +22,7 @@ initModal();
 initPack();
 initBinder();
 initShop();
+initWork();
 
 wireTabs();
 wireBinderControls();
@@ -32,6 +34,7 @@ subscribe(() => {
   renderPicker();
   renderBinder();
   renderShop();
+  renderWork();
 });
 
 // Initial paint.
@@ -39,6 +42,7 @@ renderStats();
 renderPicker();
 renderBinder();
 renderShop();
+renderWork();
 
 /* ---- tab navigation ---- */
 function wireTabs() {
@@ -56,6 +60,7 @@ function wireTabs() {
     // Refresh time-sensitive views on entry.
     if (name === 'shop') renderShop();
     if (name === 'binder') renderBinder();
+    if (name === 'work') renderWork();
   });
 }
 
