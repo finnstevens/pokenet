@@ -106,8 +106,30 @@ function writeCache(apiSetId, cards) {
   } catch { /* quota / unavailable — fine, memory cache still works */ }
 }
 
-/* Load a set's normalized cards. Memory -> fresh localStorage -> network,
-   falling back to any cached copy (even stale) if the network fails. */
+/* Fetch a set with retry + backoff. The public pokemontcg.io API (no key) rate-
+   limits bursts, so on a network error or a 429/5xx we wait and retry a few times
+   before giving up — this keeps cold-start loads (many sets at once) resilient. */
+async function fetchSetJson(url, attempts = 4) {
+  let lastErr;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const r = await fetch(url);
+      if (r.ok) return await r.json();
+      lastErr = new Error('HTTP ' + r.status);
+      if (r.status !== 429 && r.status < 500) throw lastErr; // non-retryable client error
+    } catch (e) {
+      lastErr = e;
+    }
+    if (i < attempts - 1) {
+      const wait = 500 * Math.pow(2, i) + Math.floor(Math.random() * 300); // 0.5s,1.1s,2.3s…
+      await new Promise(res => setTimeout(res, wait));
+    }
+  }
+  throw lastErr;
+}
+
+/* Load a set's normalized cards. Memory -> fresh localStorage -> network (with
+   retry/backoff), falling back to any cached copy (even stale) if it still fails. */
 export async function loadSet(apiSetId) {
   if (memo.has(apiSetId)) return memo.get(apiSetId);
   if (inflight.has(apiSetId)) return inflight.get(apiSetId);
@@ -119,8 +141,7 @@ export async function loadSet(apiSetId) {
   }
 
   const url = `${API}?q=set.id:${apiSetId}&pageSize=250&orderBy=number`;
-  const promise = fetch(url)
-    .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+  const promise = fetchSetJson(url)
     .then(json => {
       const cards = normalizeSet(json);
       memo.set(apiSetId, cards);
