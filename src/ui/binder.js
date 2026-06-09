@@ -4,7 +4,7 @@
    - Pokémon Sealed: booster packs you've bought and kept sealed; open one
      anytime from here. */
 
-import { state, isWished, isLocked, isSleeved, setBinderTab, takeBox, addSealedMany, listSlabForSale } from '../state/store.js';
+import { state, isWished, isLocked, isSleeved, setBinderTab, takeBox, addSealedMany, listSlabForSale, toggleSlabLock } from '../state/store.js';
 import { SETS } from '../data/sets.js';
 import { slabSellValue } from '../game/economy.js';
 import { formatPrice } from '../services/prices.js';
@@ -63,8 +63,13 @@ export function initBinder() {
   });
 
   gradedGrid.addEventListener('click', e => {
+    const lockBtn = e.target.closest('.lock-slab');
+    if (lockBtn) { toggleSlabLock(lockBtn.dataset.slab); return; }
+
     const btn = e.target.closest('.sell-slab');
     if (!btn) return;
+    const slab = state.graded.find(s => s.id === btn.dataset.slab);
+    if (slab && slab.locked) { toast('Locked', 'Unlock this slab before selling.'); return; }
     const sale = listSlabForSale(btn.dataset.slab, Date.now());
     if (sale) toast('Listed', `${sale.card.name} — selling for ${formatPrice(sale.value)}…`);
   });
@@ -134,14 +139,16 @@ function renderGraded() {
   }).join('');
 
   const slabHTML = slabs.map(s => `
-      <div class="slab-card graded grade-${s.grade}" data-rarity="${s.card.tier}" title="${s.card.name} · PSA ${s.grade}">
+      <div class="slab-card graded grade-${s.grade}${s.locked ? ' locked' : ''}" data-rarity="${s.card.tier}" title="${s.card.name} · PSA ${s.grade}${s.locked ? ' · locked' : ''}">
         <div class="slab-badge grade">PSA ${s.grade}</div>
+        ${s.locked ? `<div class="lock-badge">🔒</div>` : ''}
         <div class="sealed-art">
           <img src="${s.card.image}" alt="${s.card.name}" loading="lazy" onerror="this.classList.add('img-fail')">
         </div>
         <div class="slab-name">${s.card.name}</div>
         <div class="price-tag">${formatPrice(s.value)}</div>
-        <button class="btn sell-slab" data-slab="${s.id}">Sell · ${formatPrice(slabSellValue(s))}</button>
+        <button class="btn lock-slab" data-slab="${s.id}">${s.locked ? '🔒 Locked' : '🔓 Lock'}</button>
+        <button class="btn sell-slab${s.locked ? ' disabled-look' : ''}" data-slab="${s.id}">Sell · ${formatPrice(slabSellValue(s))}</button>
       </div>`).join('');
 
   gradedGrid.innerHTML = jobHTML + slabHTML;

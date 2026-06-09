@@ -1092,6 +1092,9 @@ header {
 .slab-card.grade-2 .slab-badge.grade, .slab-card.grade-1 .slab-badge.grade { background: #ff3b3b; color: #fff; }
 .slab-timer { font-family: 'Press Start 2P', monospace; font-size: 0.5rem; color: var(--muted); }
 .slab-card .sell-slab { font-size: 0.55rem; padding: 8px 12px; width: 100%; }
+.slab-card .lock-slab { font-size: 0.55rem; padding: 8px 12px; width: 100%; border-color: var(--muted); color: var(--muted); }
+.slab-card.locked .lock-slab { border-color: var(--neon-yellow); color: var(--neon-yellow); }
+.slab-card .sell-slab.disabled-look { opacity: 0.5; }
 
 .price-tag {
   margin-top: 2px;

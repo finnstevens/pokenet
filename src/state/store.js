@@ -382,9 +382,20 @@ export function processGrading(now) {
 
 /* List a slab for sale at its graded value (minus the haircut). Reuses the
    pendingSales queue — the sale's card snapshot carries the PSA grade label. */
+/* Lock / unlock a slab so it can't be accidentally sold. Lock state rides on the
+   slab object (persisted with state.graded). */
+export function toggleSlabLock(slabId) {
+  const slab = state.graded.find(s => s.id === slabId);
+  if (!slab) return null;
+  slab.locked = !slab.locked;
+  commit();
+  return { locked: slab.locked };
+}
+
 export function listSlabForSale(slabId, now) {
   const idx = state.graded.findIndex(s => s.id === slabId);
   if (idx < 0) return null;
+  if (state.graded[idx].locked) return null; // locked slabs are protected
   const [slab] = state.graded.splice(idx, 1);
   const value = slabSellValue(slab);
   const duration = sellDurationMs(slab.card);
