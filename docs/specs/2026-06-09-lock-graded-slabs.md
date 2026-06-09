@@ -2,7 +2,7 @@
 title: Lock graded (PSA) slabs
 date: 2026-06-09
 slug: lock-graded-slabs
-status: Verified   # Draft → Approved → Built → Verified → Shipped
+status: Shipped   # Draft → Approved → Built → Verified → Shipped
 owner: finn
 ---
 
@@ -34,4 +34,4 @@ owner: finn
   (slab stays, toast); Unlock → Sell lists it; lock persists across reload.
 
 ## Changelog
-- `<pending>` — Lock graded slabs
+- `39ad199` — Lock graded slabs; deployed ✓
