@@ -4,8 +4,9 @@
    - Pokémon Sealed: booster packs you've bought and kept sealed; open one
      anytime from here. */
 
-import { state, isWished, isLocked, isSleeved, setBinderTab, takeBox, addSealedMany } from '../state/store.js';
+import { state, isWished, isLocked, isSleeved, setBinderTab, takeBox, addSealedMany, listSlabForSale } from '../state/store.js';
 import { SETS } from '../data/sets.js';
+import { slabSellValue } from '../game/economy.js';
 import { formatPrice } from '../services/prices.js';
 import { showCard } from './modal.js';
 import { openFromSealed, openPackFromBox, ripBox } from './pack.js';
@@ -13,14 +14,16 @@ import { toast } from './toast.js';
 
 const RARITY_ORDER = { secret: 0, ultra: 1, holo: 2, rare: 3, uncommon: 4, common: 5 };
 
-let grid, sealedGrid, subtabs, cardsPane, sealedPane;
+let grid, sealedGrid, gradedGrid, subtabs, cardsPane, sealedPane, gradedPane;
 
 export function initBinder() {
   grid = document.getElementById('binder');
   sealedGrid = document.getElementById('sealed-grid');
+  gradedGrid = document.getElementById('graded-grid');
   subtabs = document.getElementById('binder-subtabs');
   cardsPane = document.getElementById('binder-cards');
   sealedPane = document.getElementById('binder-sealed');
+  gradedPane = document.getElementById('binder-graded');
 
   grid.addEventListener('click', e => {
     const mini = e.target.closest('.mini-card');
@@ -55,6 +58,23 @@ export function initBinder() {
       }
     }
   });
+
+  gradedGrid.addEventListener('click', e => {
+    const btn = e.target.closest('.sell-slab');
+    if (!btn) return;
+    const sale = listSlabForSale(btn.dataset.slab, Date.now());
+    if (sale) toast('Listed', `${sale.card.name} — selling for ${formatPrice(sale.value)}…`);
+  });
+
+  // Live countdown for in-progress grading jobs (text-only, no image rebuild).
+  setInterval(() => {
+    if (state.binderTab !== 'graded' || !state.grading.length) return;
+    const now = Date.now();
+    state.grading.forEach(j => {
+      const el = gradedGrid.querySelector(`.slab-timer[data-jobid="${j.id}"]`);
+      if (el) el.textContent = `${Math.max(0, (j.readyAt - now) / 1000).toFixed(1)}s left`;
+    });
+  }, 250);
 }
 
 function sortEntries(list) {
@@ -75,13 +95,53 @@ export function renderBinder() {
   if (!grid) return;
 
   // Reflect the active subtab.
-  const tab = state.binderTab === 'sealed' ? 'sealed' : 'cards';
+  const tab = ['cards', 'sealed', 'graded'].includes(state.binderTab) ? state.binderTab : 'cards';
   subtabs.querySelectorAll('.subtab').forEach(t => t.classList.toggle('active', t.dataset.sub === tab));
   cardsPane.style.display = tab === 'cards' ? '' : 'none';
   sealedPane.style.display = tab === 'sealed' ? '' : 'none';
+  gradedPane.style.display = tab === 'graded' ? '' : 'none';
 
   renderCards();
   renderSealed();
+  renderGraded();
+}
+
+function renderGraded() {
+  if (!gradedGrid) return;
+  const now = Date.now();
+  const jobs = state.grading || [];
+  const slabs = state.graded || [];
+
+  if (!jobs.length && !slabs.length) {
+    gradedGrid.innerHTML = `<div class="empty">No graded cards yet. Open a card and tap “🔬 Grade” to send it off. Sleeve a card first to preserve its condition for a higher grade.</div>`;
+    return;
+  }
+
+  const jobHTML = jobs.map(j => {
+    const remaining = Math.max(0, j.readyAt - now);
+    return `
+      <div class="slab-card grading-job" data-rarity="${j.card.tier}" title="${j.card.name} — grading">
+        <div class="slab-badge pending">GRADING…</div>
+        <div class="sealed-art">
+          <img src="${j.card.image}" alt="${j.card.name}" loading="lazy" onerror="this.classList.add('img-fail')">
+        </div>
+        <div class="slab-name">${j.card.name}</div>
+        <div class="slab-timer" data-jobid="${j.id}">${(remaining / 1000).toFixed(1)}s left</div>
+      </div>`;
+  }).join('');
+
+  const slabHTML = slabs.map(s => `
+      <div class="slab-card graded grade-${s.grade}" data-rarity="${s.card.tier}" title="${s.card.name} · PSA ${s.grade}">
+        <div class="slab-badge grade">PSA ${s.grade}</div>
+        <div class="sealed-art">
+          <img src="${s.card.image}" alt="${s.card.name}" loading="lazy" onerror="this.classList.add('img-fail')">
+        </div>
+        <div class="slab-name">${s.card.name}</div>
+        <div class="price-tag">${formatPrice(s.value)}</div>
+        <button class="btn sell-slab" data-slab="${s.id}">Sell · ${formatPrice(slabSellValue(s))}</button>
+      </div>`).join('');
+
+  gradedGrid.innerHTML = jobHTML + slabHTML;
 }
 
 function renderCards() {

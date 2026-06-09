@@ -1032,6 +1032,58 @@ header {
   font-size: 0.7rem;
   color: var(--muted);
 }
+.modal-grade { margin-top: 14px; text-align: center; }
+.grade-btn {
+  border-color: var(--r-ultra);
+  color: var(--r-ultra);
+  background: rgba(255,215,0,0.08);
+  font-size: 0.7rem;
+  padding: 10px 18px;
+}
+.grade-btn:hover { background: var(--r-ultra); color: #111; box-shadow: 0 0 24px rgba(255,215,0,0.5); }
+.modal-grade-hint { margin-top: 8px; font-size: 0.66rem; color: var(--muted); }
+
+/* Graded slabs (and in-progress grading jobs) in the binder. */
+.slab-card {
+  border-radius: 8px;
+  border: 2px solid var(--r-ultra);
+  box-shadow: 0 0 16px rgba(255,215,0,0.35);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: #0a0a1a;
+  position: relative;
+}
+.slab-card.grading-job { border-color: var(--muted); box-shadow: none; opacity: 0.85; }
+.slab-card .sealed-art { width: 100%; aspect-ratio: 5/7; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.slab-card .sealed-art img { width: 100%; height: 100%; object-fit: contain; }
+.slab-card .sealed-art img.img-fail { opacity: 0; }
+.slab-name {
+  font-family: 'Space Mono', monospace;
+  font-size: 0.62rem;
+  text-align: center;
+  color: var(--ink);
+}
+.slab-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 3;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.5rem;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+.slab-badge.pending { background: #333; color: var(--muted); }
+.slab-badge.grade { background: var(--r-ultra); color: #111; }
+.slab-card.grade-8 .slab-badge.grade, .slab-card.grade-7 .slab-badge.grade { background: var(--neon-green); }
+.slab-card.grade-6 .slab-badge.grade, .slab-card.grade-5 .slab-badge.grade { background: #00f0ff; }
+.slab-card.grade-4 .slab-badge.grade, .slab-card.grade-3 .slab-badge.grade,
+.slab-card.grade-2 .slab-badge.grade, .slab-card.grade-1 .slab-badge.grade { background: #ff3b3b; color: #fff; }
+.slab-timer { font-family: 'Press Start 2P', monospace; font-size: 0.5rem; color: var(--muted); }
+.slab-card .sell-slab { font-size: 0.55rem; padding: 8px 12px; width: 100%; }
 
 .price-tag {
   margin-top: 2px;

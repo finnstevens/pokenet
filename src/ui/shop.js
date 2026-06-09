@@ -5,7 +5,7 @@
    including the last copy. */
 
 import { state, sellableCards, listForSale, processSales, claimDaily, isLocked, bulkSellCommonsUncommons, setShopTab,
-         spendMoney, addSleeves, isSleeved } from '../state/store.js';
+         spendMoney, addSleeves, isSleeved, processGrading } from '../state/store.js';
 import { sellValue, sellDurationMs, dailyCooldownRemaining, formatCooldown, DAILY_REWARD } from '../game/economy.js';
 import { formatPrice } from '../services/prices.js';
 import { playCoin, playClick } from '../services/audio.js';
@@ -82,8 +82,11 @@ export function initShop() {
   // place via tickSelling() — never rebuild innerHTML, which would reload every
   // <img> and make the grid flicker.
   setInterval(() => {
-    const done = processSales(Date.now());
+    const now = Date.now();
+    const done = processSales(now);
     done.forEach(s => { playCoin(); toast('Sold', `${s.card.name} → +${formatPrice(s.value)}`); });
+    const graded = processGrading(now);
+    graded.forEach(s => { playClick(); toast(`Graded: PSA ${s.grade}`, `${s.card.name} → slab worth ${formatPrice(s.value)} (Binder ▸ Graded)`); });
     if (document.getElementById('view-shop').classList.contains('active')) tickSelling();
   }, 250);
 }

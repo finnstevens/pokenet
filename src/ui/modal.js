@@ -2,7 +2,8 @@
    owned count, and a wishlist toggle. */
 
 import { formatPrice } from '../services/prices.js';
-import { state, isWished, toggleWishlist, isLocked, toggleLock, isSleeved, toggleSleeve } from '../state/store.js';
+import { state, isWished, toggleWishlist, isLocked, toggleLock, isSleeved, toggleSleeve, submitForGrading } from '../state/store.js';
+import { GRADING_FEE } from '../game/economy.js';
 import { playClick } from '../services/audio.js';
 import { toast } from './toast.js';
 
@@ -52,6 +53,11 @@ export function showCard(card) {
       </button>
     </div>
     <div class="modal-sleeve-hint">${sleeved ? 'Protected from selling · ' : ''}${state.sleeves} sleeve${state.sleeves === 1 ? '' : 's'} left</div>
+    ${owned > 0 ? `
+    <div class="modal-grade">
+      <button class="btn grade-btn" id="modal-grade-btn">🔬 Grade — $${GRADING_FEE}</button>
+      <div class="modal-grade-hint">Uses 1 copy. Grade = centering (luck at pull) + condition — sleeve to preserve it.</div>
+    </div>` : ''}
   `;
 
   modal.querySelector('.modal-close').addEventListener('click', close);
@@ -70,6 +76,17 @@ export function showCard(card) {
     if (!res) { toast('No sleeves', 'Buy a box of sleeves in the Shop ▸ Buy tab first.'); return; }
     playClick();
     showCard(card);
+  });
+  modal.querySelector('#modal-grade-btn')?.addEventListener('click', () => {
+    const job = submitForGrading(card.uid, Date.now());
+    if (!job) {
+      toast(state.money < GRADING_FEE ? 'Not enough money' : 'Not owned',
+            state.money < GRADING_FEE ? `Grading costs $${GRADING_FEE}. Sell cards or claim your daily.` : 'You no longer own this card.');
+      return;
+    }
+    playClick();
+    toast('Submitted for grading', `${card.name} is at the grader — track it in Binder ▸ Graded.`);
+    if (state.binder[card.uid]) showCard(card); else close();
   });
 
   backdrop.classList.add('show');

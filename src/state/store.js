@@ -6,8 +6,10 @@
    Cards are real printings now, so the binder is keyed by card `uid`
    (e.g. "sv8pt5-6", or "sv8pt5-6:rev" for a reverse-holo pull). */
 
-import { STARTING_MONEY, sellValue, sellDurationMs, DAILY_REWARD, dailyCooldownRemaining } from '../game/economy.js';
+import { STARTING_MONEY, sellValue, sellDurationMs, DAILY_REWARD, dailyCooldownRemaining,
+         GRADING_FEE, gradingDurationMs, gradedValue, slabSellValue } from '../game/economy.js';
 import { checkAchievements } from '../game/achievements.js';
+import { rollCentering, currentExposure, conditionFrom, computeGrade } from '../game/grading.js';
 import { FREE_SET_ID } from '../data/sets.js';
 
 const STORAGE_KEY = 'pokepack.save.v2';
@@ -24,7 +26,9 @@ function freshState() {
     sealed: {},          // set.id -> count of sealed packs held (unopened)
     boxes: {},           // set.id -> number[] of held booster boxes, each = its packs remaining
     sleeves: 0,          // count of unused card sleeves in inventory
-    sleeved: [],         // [uid] — cards in a sleeve (protected from selling; grading foundation)
+    sleeved: [],         // [uid] — cards in a sleeve (protected from selling; preserves condition)
+    grading: [],         // [{ id, uid, card, grade, value, startedAt, readyAt }] — in-progress submissions
+    graded: [],          // [{ id, uid, card, grade, value, gradedAt }] — finished slabs
     achievements: [],    // [achievementId]
     lastDailyClaim: null,
     lastOpen: {},        // setId -> timestamp (for cooldown-gated sets)
@@ -44,7 +48,7 @@ export const state = freshState();
 /* ---- persistence ---- */
 const PERSIST_KEYS = [
   'money', 'packsOpened', 'totalCards', 'binder', 'pendingSales', 'wishlist', 'locked', 'sealed', 'boxes',
-  'sleeves', 'sleeved',
+  'sleeves', 'sleeved', 'grading', 'graded',
   'achievements', 'lastDailyClaim', 'lastOpen', 'selectedSet', 'currentFilter', 'binderTab', 'shopTab', 'sort',
 ];
 
@@ -100,11 +104,34 @@ export function sellableCards() {
 
 /* ---- actions ---- */
 
+/* A new binder stack carries condition state for grading: an intrinsic centering
+   roll (fixed) plus exposure tracking (it starts exposed unless already sleeved). */
+function freshBinderEntry(card, now) {
+  return {
+    card, count: 0,
+    centering: rollCentering(),
+    pulledAt: now,
+    exposedMs: 0,
+    exposeStart: state.sleeved.includes(card.uid) ? null : now,
+  };
+}
+/* Backfill condition fields on pre-existing/older-save entries on first need. */
+function ensureCondition(entry, now) {
+  if (entry.centering === undefined) {
+    entry.centering = rollCentering();
+    entry.pulledAt = entry.pulledAt || now;
+    entry.exposedMs = entry.exposedMs || 0;
+    entry.exposeStart = state.sleeved.includes(entry.card.uid) ? null : now;
+  }
+  return entry;
+}
+
 /* Add a batch of pulled cards to the binder (keyed by uid). Returns
    newly-unlocked achievements so the caller can toast them. */
 export function addCards(cards) {
+  const now = Date.now();
   cards.forEach(card => {
-    if (!state.binder[card.uid]) state.binder[card.uid] = { card, count: 0 };
+    if (!state.binder[card.uid]) state.binder[card.uid] = freshBinderEntry(card, now);
     state.binder[card.uid].count++;
   });
   state.totalCards += cards.length;
@@ -119,9 +146,10 @@ export function addCards(cards) {
    36-pack rip doesn't trigger 36 re-renders). `packArrays` is an array of packs,
    each pack an array of cards. Returns newly-unlocked achievements. */
 export function addPacks(packArrays) {
+  const now = Date.now();
   packArrays.forEach(pack => {
     pack.forEach(card => {
-      if (!state.binder[card.uid]) state.binder[card.uid] = { card, count: 0 };
+      if (!state.binder[card.uid]) state.binder[card.uid] = freshBinderEntry(card, now);
       state.binder[card.uid].count++;
     });
     state.totalCards += pack.length;
@@ -273,18 +301,98 @@ export function isSleeved(uid) { return state.sleeved.includes(uid); }
 /* Sleeve a card (consumes one sleeve) or un-sleeve it (refunds the sleeve).
    Returns { sleeved } on success, or null if trying to sleeve with none left. */
 export function toggleSleeve(uid) {
+  const now = Date.now();
+  const entry = state.binder[uid];
   const i = state.sleeved.indexOf(uid);
-  if (i >= 0) {                      // un-sleeve → refund
+  if (i >= 0) {                      // un-sleeve → refund + resume condition decay
     state.sleeved.splice(i, 1);
     state.sleeves++;
+    if (entry) { ensureCondition(entry, now); entry.exposeStart = now; }
     commit();
     return { sleeved: false };
   }
   if (state.sleeves <= 0) return null; // none to apply
   state.sleeves--;
   state.sleeved.push(uid);
+  if (entry) {                       // sleeve → freeze condition (bank open exposure)
+    ensureCondition(entry, now);
+    if (entry.exposeStart) { entry.exposedMs += now - entry.exposeStart; entry.exposeStart = null; }
+  }
   commit();
   return { sleeved: true };
+}
+
+/* ---- grading (submit → wait → slab; slabs sell at graded value) ---- */
+
+/* Submit one copy of a card for grading: charge the fee, consume the copy, and
+   queue a job. The grade is computed now (from the card's fixed centering + its
+   condition frozen at submission) but only revealed when the job completes.
+   Returns the job, or null if not owned / can't afford. */
+export function submitForGrading(uid, now) {
+  const entry = state.binder[uid];
+  if (!entry || entry.count < 1) return null;
+  if (state.money < GRADING_FEE) return null;
+  ensureCondition(entry, now);
+  const condition = conditionFrom(currentExposure(entry, now));
+  const grade = computeGrade(entry.centering, condition);
+  const card = entry.card;
+  const value = gradedValue(card.price, grade);
+
+  state.money = +(state.money - GRADING_FEE).toFixed(2);
+  entry.count--;
+  if (entry.count <= 0) delete state.binder[uid];
+
+  const job = {
+    id: `${now}-${Math.floor(Math.random() * 1e6)}`,
+    uid, card, grade, value,
+    startedAt: now,
+    readyAt: now + gradingDurationMs(card),
+  };
+  state.grading.push(job);
+  commit();
+  return job;
+}
+
+/* Complete any grading jobs whose timer has elapsed → move them to `graded`
+   slabs. Returns the newly-finished slabs (for toasts). Runs on the shop ticker. */
+export function processGrading(now) {
+  if (!state.grading.length) return [];
+  const done = [], remaining = [];
+  for (const job of state.grading) {
+    if (now >= job.readyAt) {
+      done.push({ id: job.id, uid: job.uid, card: job.card, grade: job.grade, value: job.value, gradedAt: now });
+    } else {
+      remaining.push(job);
+    }
+  }
+  if (!done.length) return [];
+  state.grading = remaining;
+  state.graded.push(...done);
+  checkAchievements(state);
+  commit();
+  return done;
+}
+
+/* List a slab for sale at its graded value (minus the haircut). Reuses the
+   pendingSales queue — the sale's card snapshot carries the PSA grade label. */
+export function listSlabForSale(slabId, now) {
+  const idx = state.graded.findIndex(s => s.id === slabId);
+  if (idx < 0) return null;
+  const [slab] = state.graded.splice(idx, 1);
+  const value = slabSellValue(slab);
+  const duration = sellDurationMs(slab.card);
+  const isFront = state.pendingSales.length === 0;
+  const sale = {
+    id: `${now}-${Math.floor(Math.random() * 1e6)}`,
+    card: { ...slab.card, name: `${slab.card.name} (PSA ${slab.grade})` },
+    value,
+    duration,
+    listedAt: isFront ? now : null,
+    readyAt: isFront ? now + duration : null,
+  };
+  state.pendingSales.push(sale);
+  commit();
+  return sale;
 }
 
 export function setSelectedSet(id) { state.selectedSet = id; commit(); }
