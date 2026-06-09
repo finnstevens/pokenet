@@ -20,4 +20,4 @@ Naming: `YYYY-MM-DD-slug.md`. Status: Draft → Approved → Built → Verified 
 | 2026-06-09 | [Work mini-game — Restock Rush](2026-06-09-work-minigame.md) | Shipped |
 | 2026-06-09 | [Add the Chaos Rising set](2026-06-09-chaos-rising-set.md) | Shipped |
 | 2026-06-09 | [Fix — cold-start set-load rate-limiting](2026-06-09-fix-set-load-ratelimit.md) | Shipped |
-| 2026-06-09 | [Open 5 sealed packs at once](2026-06-09-open-five-sealed.md) | Verified |
+| 2026-06-09 | [Open 5 sealed packs at once](2026-06-09-open-five-sealed.md) | Shipped |

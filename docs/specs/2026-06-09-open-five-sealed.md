@@ -2,7 +2,7 @@
 title: Open 5 sealed packs at once
 date: 2026-06-09
 slug: open-five-sealed
-status: Verified   # Draft → Approved → Built → Verified → Shipped
+status: Shipped   # Draft → Approved → Built → Verified → Shipped
 owner: finn
 ---
 
@@ -37,4 +37,4 @@ owner: finn
   held the button reads "Open 3".
 
 ## Changelog
-- `<pending>` — Open 5 sealed packs at once
+- `206217d` — Open 5 sealed packs at once; pushed to main; deployed ✓
