@@ -363,6 +363,32 @@ export const SETS = [
       '--pack-c1': '#ff5a3c', '--pack-c2': '#ffd11a', '--pack-c3': '#ffffff', '--pack-c4': '#ff5a3c',
     },
   },
+  {
+    id: 'chaosrising',
+    apiSetId: 'me4',
+    name: 'Chaos Rising',
+    blurb: 'Mega Evolution 2026. Mega Greninja & the Z-A Megas. Brand-new set.',
+    cost: 5, sealedPrice: 5, // real sealed single-pack market price
+    box: { packs: 36, price: 120 }, // real sealed booster-box market price (approx)
+    cooldownMs: 0,
+    pack: {
+      // NOTE: brand-new set — pokemontcg.io has no live prices yet, so card values
+      // use rarity floors until the data source populates (self-healing).
+      slots: ['common', 'common', 'common', 'common', 'uncommon', 'uncommon', 'reverse', 'rare-slot'],
+      // hits map via rarityToTier: Double/Illustration Rare → holo, Ultra Rare →
+      // ultra, Special Illustration + Mega Hyper Rare → secret.
+      rareSlot: [
+        { tier: 'rare',   w: 48 },
+        { tier: 'holo',   w: 30 },
+        { tier: 'ultra',  w: 16 },
+        { tier: 'secret', w: 6 },
+      ],
+    },
+    theme: {
+      '--accent': '#ff2e6b', '--accent-glow': 'rgba(255,46,107,0.5)',
+      '--pack-c1': '#c2185b', '--pack-c2': '#1a1a2e', '--pack-c3': '#b829ff', '--pack-c4': '#00e5ff',
+    },
+  },
 ];
 
 export function getSet(id) {
