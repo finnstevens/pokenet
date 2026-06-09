@@ -2,7 +2,7 @@
 title: Add the Chaos Rising set
 date: 2026-06-09
 slug: chaos-rising-set
-status: Verified   # Draft → Approved → Built → Verified → Shipped
+status: Shipped   # Draft → Approved → Built → Verified → Shipped
 owner: finn
 ---
 
@@ -46,4 +46,4 @@ owner: finn
   on select) to avoid the cold-start rate-limit race. Out of scope here; logged.
 
 ## Changelog
-- `<pending>` — Add the Chaos Rising set (me4)
+- `d425ae9` — Add the Chaos Rising set (me4); pushed to main; deployed ✓
