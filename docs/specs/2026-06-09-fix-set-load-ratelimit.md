@@ -2,7 +2,7 @@
 title: Fix — sealed/pack opening broken by cold-start rate-limiting
 date: 2026-06-09
 slug: fix-set-load-ratelimit
-status: Verified   # Draft → Approved → Built → Verified → Shipped
+status: Shipped   # Draft → Approved → Built → Verified → Shipped
 owner: finn
 type: bugfix
 ---
@@ -42,4 +42,5 @@ Together: the burst is avoided, and any straggler retries through.
   animation; that's expected, not a hang.)
 
 ## Changelog
-- `<pending>` — Fix cold-start set-load rate-limiting (retry + concurrency cap)
+- `8bb3614` — loadSet retry/backoff (the core fix)
+- pre-warm concurrency cap ships with the Open-5 commit (same deploy)

@@ -9,7 +9,7 @@ import { SETS } from '../data/sets.js';
 import { slabSellValue } from '../game/economy.js';
 import { formatPrice } from '../services/prices.js';
 import { showCard } from './modal.js';
-import { openFromSealed, openPackFromBox, ripBox } from './pack.js';
+import { openFromSealed, openManyFromSealed, openPackFromBox, ripBox } from './pack.js';
 import { toast } from './toast.js';
 
 const RARITY_ORDER = { secret: 0, ultra: 1, holo: 2, rare: 3, uncommon: 4, common: 5 };
@@ -41,6 +41,9 @@ export function initBinder() {
   sealedGrid.addEventListener('click', e => {
     const openBtn = e.target.closest('.open-sealed');
     if (openBtn) { openFromSealed(openBtn.dataset.set); return; }
+
+    const manyBtn = e.target.closest('.open-many');
+    if (manyBtn) { openManyFromSealed(manyBtn.dataset.set, 5); return; }
 
     const boxBtn = e.target.closest('.box-action');
     if (!boxBtn) return;
@@ -225,6 +228,7 @@ function renderSealed() {
         <div class="sealed-name">${set.name}</div>
         <div class="price-tag">${formatPrice(each)} ea</div>
         <button class="btn open-sealed" data-set="${set.id}">Open one</button>
+        ${count >= 2 ? `<button class="btn open-many" data-set="${set.id}">Open ${Math.min(5, count)}</button>` : ''}
       </div>
     `;
   }).join('');

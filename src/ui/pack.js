@@ -66,13 +66,33 @@ export function initPack() {
   selectSet(getSet(state.selectedSet));
 
   // Pre-warm every set so the picker shows real averaged prices (not the static
-  // fallback) and updates as each loads. Cached after the first fetch.
-  SETS.forEach(s => {
-    if (!loadedSet(s.apiSetId)) loadSet(s.apiSetId).then(() => renderPicker()).catch(() => {});
-  });
+  // fallback) and updates as each loads. Cached after the first fetch. Loaded with
+  // limited concurrency (not all at once) so the keyless public API doesn't rate-
+  // limit the burst and drop sets — loadSet retries with backoff as a backstop.
+  prewarmSets();
 
   // Live ticker for the free-pack cooldown countdown.
   setInterval(updatePackState, 500);
+}
+
+/* Pre-warm all sets with a small concurrency cap so we don't fire ~18 requests
+   at once (which the keyless public API rate-limits). Each finished load starts
+   the next; the picker re-renders as sets arrive. */
+function prewarmSets() {
+  const queue = SETS.filter(s => !loadedSet(s.apiSetId));
+  const CONCURRENCY = 4;
+  let active = 0;
+  const pump = () => {
+    while (active < CONCURRENCY && queue.length) {
+      const s = queue.shift();
+      active++;
+      loadSet(s.apiSetId)
+        .then(() => renderPicker())
+        .catch(() => {})
+        .finally(() => { active--; pump(); });
+    }
+  };
+  pump();
 }
 
 /* The price of a pack is its real sealed-pack market price (set in
@@ -328,13 +348,38 @@ export function ripBox(setId) {
 
   const packs = Array.from({ length: n }, () => generatePack(set, cards));
   pendingAchievements = addPacks(packs); // bank everything up front, one commit
-  startBoxSession(set, packs);
+  startBoxSession(set, packs, `${set.name} Box`);
+}
+
+/* Open several sealed packs at once (e.g. "Open 5"): consume up to n of the held
+   sealed packs for a set, bank them all, and present them with the same
+   pack-by-pack-with-skip flow as ripping a box. */
+export function openManyFromSealed(setId, n) {
+  if (revealing) return;
+  const set = getSet(setId);
+  const have = state.sealed[set.id] || 0;
+  const count = Math.min(n, have);
+  if (count < 1) return;
+  const cards = loadedSet(set.apiSetId);
+  if (!cards) {
+    loadSet(set.apiSetId).then(() => openManyFromSealed(setId, n)).catch(() => toast('Load failed', 'Could not load that set right now.'));
+    return;
+  }
+  for (let i = 0; i < count; i++) consumeSealed(set.id);
+  document.querySelector('#tabs [data-tab="shop"]').click();
+  document.querySelector('#shop-subtabs [data-sub="buy"]').click();
+  setSelectedSet(set.id);
+  selectSet(set);
+
+  const packs = Array.from({ length: count }, () => generatePack(set, cards));
+  pendingAchievements = addPacks(packs);
+  startBoxSession(set, packs, `${set.name} ×${count}`);
 }
 
 /* Enter the pack-by-pack rip presentation for an already-banked set of packs. */
-function startBoxSession(set, packs) {
+function startBoxSession(set, packs, label) {
   revealing = true;
-  boxSession = { set, packs, idx: 0, total: packs.length };
+  boxSession = { set, packs, idx: 0, total: packs.length, label: label || `${set.name} Box` };
   document.getElementById('btn-keep-sealed').style.display = 'none';
   $btnBuyBox.style.display = 'none';
   $pack.style.display = 'none';
@@ -356,7 +401,7 @@ function showBoxPack(i) {
   celebrate(best);
   const last = i >= boxSession.total - 1;
   $boxHead.style.display = '';
-  $boxHead.textContent = `${boxSession.set.name} box · Pack ${i + 1} / ${boxSession.total}`;
+  $boxHead.textContent = `${boxSession.label} · Pack ${i + 1} / ${boxSession.total}`;
   $boxNext.textContent = last ? 'See Results ▶' : 'Open Next Pack ▶';
 }
 
@@ -375,7 +420,7 @@ function showBoxResults() {
   sfx.playFanfare(best);
   celebrate(best);
   $boxHead.style.display = '';
-  $boxHead.textContent = `${boxSession.set.name} box ripped · ${boxSession.total} packs · ${all.length} cards`;
+  $boxHead.textContent = `${boxSession.label} · ${boxSession.total} packs · ${all.length} cards`;
   $boxNext.style.display = 'none';
   $boxSkip.style.display = 'none';
   $boxDone.style.display = '';
