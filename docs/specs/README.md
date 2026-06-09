@@ -17,4 +17,4 @@ Naming: `YYYY-MM-DD-slug.md`. Status: Draft → Approved → Built → Verified 
 | 2026-06-08 | [Card Sleeves](2026-06-08-card-sleeves.md) | Shipped |
 | 2026-06-08 | [Add the Generations set](2026-06-08-generations-set.md) | Shipped |
 | 2026-06-08 | [Card Grading](2026-06-08-grading.md) | Shipped |
-| 2026-06-09 | [Work mini-game — Restock Rush](2026-06-09-work-minigame.md) | Verified |
+| 2026-06-09 | [Work mini-game — Restock Rush](2026-06-09-work-minigame.md) | Shipped |

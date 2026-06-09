@@ -2,7 +2,7 @@
 title: Work mini-game — Restock Rush
 date: 2026-06-09
 slug: work-minigame
-status: Verified   # Draft → Approved → Built → Verified → Shipped
+status: Shipped   # Draft → Approved → Built → Verified → Shipped
 owner: finn
 ---
 
@@ -166,4 +166,4 @@ rarities). Bins are labelled, so it's accessible; speed is the real test.
 All acceptance criteria met.
 
 ## Changelog
-- `<pending>` — Add Restock Rush work mini-game
+- `2682dbd` — Add Restock Rush work mini-game; pushed to main; deployed ✓
