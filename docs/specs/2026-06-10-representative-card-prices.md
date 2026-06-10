@@ -2,7 +2,7 @@
 title: Representative card prices (stop averaging variants)
 date: 2026-06-10
 slug: representative-card-prices
-status: Verified   # Draft → Approved → Built → Verified → Shipped
+status: Shipped   # Draft → Approved → Built → Verified → Shipped
 owner: finn
 ---
 
@@ -72,4 +72,4 @@ All acceptance criteria met. Chase/single-variant cards unchanged; multi-printin
 (esp. vintage 1st-Ed+Unlimited) cards now show their true Unlimited value.
 
 ## Changelog
-- `<pending>` — Representative-variant card pricing (v5)
+- `54eebbf` — Representative-variant card pricing (v5); deployed ✓
