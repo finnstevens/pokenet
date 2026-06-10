@@ -2,7 +2,7 @@
 title: Auction House (Events tab)
 date: 2026-06-10
 slug: auction-house
-status: Verified   # Draft → Approved → Built → Verified → Shipped
+status: Shipped   # Draft → Approved → Built → Verified → Shipped
 owner: finn
 ---
 
@@ -105,4 +105,4 @@ reserve modal, global ticker resolving lots off-tab with toasts); `index.html` +
 All acceptance criteria met.
 
 ## Changelog
-- `<pending>` — Add the Auction House (sell-only, reserve price)
+- `8b30af6` — Add Card Show trading + Auction House; deployed ✓

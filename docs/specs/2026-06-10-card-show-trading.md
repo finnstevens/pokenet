@@ -2,7 +2,7 @@
 title: Trading at the Card Show
 date: 2026-06-10
 slug: card-show-trading
-status: Verified   # Draft → Approved → Built → Verified → Shipped
+status: Shipped   # Draft → Approved → Built → Verified → Shipped
 owner: finn
 ---
 
@@ -96,4 +96,4 @@ credit/cash, selectable offer grid, overpay warning, Complete); `styles.css`.
 All acceptance criteria met.
 
 ## Changelog
-- `<pending>` — Add trading at the Card Show
+- `8b30af6` — Add Card Show trading + Auction House; deployed ✓
