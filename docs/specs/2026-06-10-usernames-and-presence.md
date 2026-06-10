@@ -2,7 +2,7 @@
 title: Usernames + LAN presence (who's online)
 date: 2026-06-10
 slug: usernames-and-presence
-status: Verified   # Draft → Approved → Built → Verified → Shipped
+status: Shipped   # Draft → Approved → Built → Verified → Shipped
 owner: finn
 ---
 
@@ -96,4 +96,4 @@ All acceptance criteria met. **Live only under `bun run dev` (same machine/LAN);
 GitHub Pages has no server → shows "offline".**
 
 ## Changelog
-- `<pending>` — Usernames + Bun-native LAN presence
+- `7baac5d` (batch) — Usernames + Bun-native LAN presence

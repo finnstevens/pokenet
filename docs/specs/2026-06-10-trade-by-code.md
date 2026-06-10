@@ -2,7 +2,7 @@
 title: Trade with friends by share code
 date: 2026-06-10
 slug: trade-by-code
-status: Verified   # Draft → Approved → Built → Verified → Shipped
+status: Shipped   # Draft → Approved → Built → Verified → Shipped
 owner: finn
 ---
 
@@ -126,4 +126,4 @@ Trade tab + view; `main.js` wiring; `styles.css`. No `CACHE_PREFIX` bump.
 All acceptance criteria met.
 
 ## Changelog
-- `<pending>` — Add trade-with-friends by share code
+- `7baac5d` (batch) — Add trade-with-friends by share code

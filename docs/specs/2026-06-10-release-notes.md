@@ -2,7 +2,7 @@
 title: Release notes ("What's New") page
 date: 2026-06-10
 slug: release-notes
-status: Verified   # Draft → Approved → Built → Verified → Shipped
+status: Shipped   # Draft → Approved → Built → Verified → Shipped
 owner: finn
 ---
 
@@ -31,4 +31,4 @@ owner: finn
   → closes cleanly → no runtime errors. Screenshot: `docs/specs/release-notes.png`.
 
 ## Changelog
-- `<pending>` — Release notes overlay
+- `7baac5d` (batch) — Release notes overlay
