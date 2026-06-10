@@ -2,7 +2,7 @@
 title: Card Show — clock-aligned hourly stock (no unlimited supply)
 date: 2026-06-10
 slug: card-show-hourly
-status: Verified   # Draft → Approved → Built → Verified → Shipped
+status: Shipped   # Draft → Approved → Built → Verified → Shipped
 owner: finn
 ---
 
@@ -67,4 +67,4 @@ owner: finn
 All acceptance criteria met. Supply is now one finite lineup per clock hour.
 
 ## Changelog
-- `<pending>` — Card Show: clock-aligned hourly stock
+- `cd7432d` — Card Show: clock-aligned hourly stock; deployed ✓
