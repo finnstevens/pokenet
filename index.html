@@ -238,6 +238,13 @@
       <div class="cardshow-head" id="cardshow-head"></div>
       <div class="cardshow-stock" id="cardshow-stock"></div>
     </div>
+
+    <div class="auction-house">
+      <h3 class="show-section-title">🔨 Auction House — sell your cards</h3>
+      <p class="cardshow-sub">Consign a card with a reserve price; AI bidders bid it up. Meets your reserve → it sells (maybe above market); falls short → it comes back.</p>
+      <div class="auction-actions"><button class="btn" id="auction-consign">Consign a card</button></div>
+      <div class="auction-grid" id="auction-lots"></div>
+    </div>
   </section>
 
   <footer>© POKÉPACK SIM · NOT AFFILIATED WITH NINTENDO</footer>
@@ -246,6 +253,35 @@
 <!-- Modal root -->
 <div class="modal-backdrop" id="modal-backdrop">
   <div class="modal" id="modal"></div>
+</div>
+
+<!-- Trade modal (Card Show) -->
+<div class="modal-backdrop" id="trade-backdrop">
+  <div class="modal trade-modal" id="trade-modal">
+    <button class="modal-close" id="trade-close" aria-label="close">×</button>
+    <div class="trade-target" id="trade-target"></div>
+    <div class="trade-summary" id="trade-summary"></div>
+    <p class="trade-hint">Pick cards to offer (credited at 70% of market). You pay only the difference.</p>
+    <div class="binder-grid trade-offer-grid" id="trade-offer"></div>
+    <button class="btn primary" id="trade-complete">Complete Trade</button>
+  </div>
+</div>
+
+<!-- Consign modal (Auction House) -->
+<div class="modal-backdrop" id="consign-backdrop">
+  <div class="modal consign-modal" id="consign-modal">
+    <button class="modal-close" id="consign-close" aria-label="close">×</button>
+    <div class="trade-target-name" style="text-align:center">Consign a card to auction</div>
+    <div class="consign-controls" id="consign-controls" style="display:none;">
+      <span id="consign-selected"></span>
+      <label class="consign-reserve-label">Reserve $
+        <input id="consign-reserve" class="search-box" type="number" min="0.01" step="0.01" autocomplete="off">
+      </label>
+      <button class="btn primary" id="consign-list">List for Auction</button>
+    </div>
+    <p class="trade-hint">Pick a card, then set your reserve (asking) price — it sells only if the bids reach it.</p>
+    <div class="binder-grid trade-offer-grid" id="consign-offer"></div>
+  </div>
 </div>
 
 <!-- Toast root -->

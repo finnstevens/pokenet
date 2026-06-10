@@ -10,6 +10,7 @@ import { STARTING_MONEY, sellValue, sellDurationMs, DAILY_REWARD, dailyCooldownR
          GRADING_FEE, gradingDurationMs, gradedValue, slabSellValue } from '../game/economy.js';
 import { checkAchievements } from '../game/achievements.js';
 import { rollCentering, currentExposure, conditionFrom, computeGrade } from '../game/grading.js';
+import { makeSellLot, aiStep } from '../game/auction.js';
 import { FREE_SET_ID } from '../data/sets.js';
 
 const STORAGE_KEY = 'pokepack.save.v2';
@@ -34,6 +35,7 @@ function freshState() {
     lastWork: null,      // timestamp of the last completed work shift (cooldown)
     lastCardShow: null,  // timestamp of the last card-show entry (1h cooldown)
     cardShowStock: null, // { generatedAt, items[] } — the current show's lineup
+    auctions: [],        // [{ id, card, market, reserve, currentBid, aiMax, endsAt, aiNextAt }] — active sell lots
     lastOpen: {},        // setId -> timestamp (for cooldown-gated sets)
     selectedSet: FREE_SET_ID,
 
@@ -52,7 +54,7 @@ export const state = freshState();
 const PERSIST_KEYS = [
   'money', 'packsOpened', 'totalCards', 'binder', 'pendingSales', 'wishlist', 'locked', 'sealed', 'boxes',
   'sleeves', 'sleeved', 'grading', 'graded',
-  'achievements', 'lastDailyClaim', 'lastWork', 'lastCardShow', 'cardShowStock',
+  'achievements', 'lastDailyClaim', 'lastWork', 'lastCardShow', 'cardShowStock', 'auctions',
   'lastOpen', 'selectedSet', 'currentFilter', 'binderTab', 'shopTab', 'sort',
 ];
 
@@ -286,17 +288,10 @@ export function enterCardShow(stock, now) {
   commit();
 }
 
-/* Buy one item from the current show lineup. Charges money and routes it:
+/* Route a granted show item into the right inventory and mark it sold.
    single → binder (gradeable, no packsOpened bump), pack → sealed, box → boxes.
-   Marks the item sold. Returns { ok, item } / { error } / null. */
-export function buyShowItem(itemId, now) {
-  const stock = state.cardShowStock;
-  if (!stock) return null;
-  const item = stock.items.find(i => i.id === itemId && !i.sold);
-  if (!item) return null;
-  if (state.money < item.price) return { error: 'money' };
-
-  state.money = +(state.money - item.price).toFixed(2);
+   Does NOT charge money or commit — callers do that. */
+function grantShowItem(item, now) {
   if (item.kind === 'single') {
     const c = item.card;
     if (!state.binder[c.uid]) state.binder[c.uid] = freshBinderEntry(c, now);
@@ -309,9 +304,108 @@ export function buyShowItem(itemId, now) {
     state.boxes[item.setId].push(item.packs);
   }
   item.sold = true;
+}
+
+/* Buy one item from the current show lineup for cash. Returns { ok, item } /
+   { error } / null. */
+export function buyShowItem(itemId, now) {
+  const stock = state.cardShowStock;
+  if (!stock) return null;
+  const item = stock.items.find(i => i.id === itemId && !i.sold);
+  if (!item) return null;
+  if (state.money < item.price) return { error: 'money' };
+
+  state.money = +(state.money - item.price).toFixed(2);
+  grantShowItem(item, now);
   checkAchievements(state);
   commit();
   return { ok: true, item };
+}
+
+/* Trade binder cards (+ a cash top-up) for a show item. `offeredUids` is a list
+   of binder uids, one copy each. Trade-ins are credited at the dealer haircut
+   (`sellValue`, 0.7× market); you pay only the cash shortfall. Locked/sleeved
+   cards can't be offered. Returns { ok, item, cashPaid, credit } / { error }. */
+export function tradeForShowItem(itemId, offeredUids, now) {
+  const stock = state.cardShowStock;
+  if (!stock) return null;
+  const item = stock.items.find(i => i.id === itemId && !i.sold);
+  if (!item) return null;
+  if (!offeredUids || !offeredUids.length) return { error: 'empty' };
+
+  const need = {};
+  for (const uid of offeredUids) need[uid] = (need[uid] || 0) + 1;
+  let credit = 0;
+  for (const [uid, n] of Object.entries(need)) {
+    const e = state.binder[uid];
+    if (!e || e.count < n) return { error: 'invalid' };
+    if (state.locked.includes(uid) || state.sleeved.includes(uid)) return { error: 'protected' };
+    credit += sellValue(e.card) * n;
+  }
+  credit = +credit.toFixed(2);
+  const cashNeeded = Math.max(0, +(item.price - credit).toFixed(2));
+  if (state.money < cashNeeded) return { error: 'money' };
+
+  for (const [uid, n] of Object.entries(need)) {
+    state.binder[uid].count -= n;
+    if (state.binder[uid].count <= 0) delete state.binder[uid];
+  }
+  if (cashNeeded > 0) state.money = +(state.money - cashNeeded).toFixed(2);
+  grantShowItem(item, now);
+  checkAchievements(state);
+  commit();
+  return { ok: true, item, cashPaid: cashNeeded, credit };
+}
+
+/* ---- auction house (sell-only: consign a card with a reserve, AI bids it up) ---- */
+
+/* Consign one copy of a binder card to auction with a reserve price. Escrows the
+   card (removes it from the binder) and creates a sell lot. Returns { ok } /
+   { error }. */
+export function consignCard(uid, reserve, now) {
+  const e = state.binder[uid];
+  if (!e || e.count < 1) return { error: 'invalid' };
+  if (state.locked.includes(uid) || state.sleeved.includes(uid)) return { error: 'protected' };
+  if (!(reserve > 0)) return { error: 'reserve' };
+  const card = e.card;
+  e.count--;
+  if (e.count <= 0) delete state.binder[uid];
+  state.auctions.push(makeSellLot(card, reserve, now));
+  commit();
+  return { ok: true };
+}
+
+/* Advance + settle auctions. Climbs due lots; on a lot's end: reserve met → pay
+   the final bid; reserve missed → return the card to the binder. Removes settled
+   lots. Returns settle outcomes (for toasts). Runs on a global ticker. */
+export function processAuctions(now) {
+  if (!state.auctions.length) return [];
+  const outcomes = [];
+  const remaining = [];
+  let changed = false;
+  for (const lot of state.auctions) {
+    if (now >= lot.endsAt) {
+      if (lot.currentBid >= lot.reserve) {
+        state.money = +(state.money + lot.currentBid).toFixed(2);
+        outcomes.push({ type: 'sold', card: lot.card, amount: lot.currentBid });
+      } else {
+        const c = lot.card;
+        if (!state.binder[c.uid]) state.binder[c.uid] = freshBinderEntry(c, now);
+        state.binder[c.uid].count++;
+        outcomes.push({ type: 'unsold', card: lot.card, bid: lot.currentBid, reserve: lot.reserve });
+      }
+      changed = true; // lot dropped (not pushed to remaining)
+    } else {
+      if (aiStep(lot, now)) changed = true;
+      remaining.push(lot);
+    }
+  }
+  if (changed) {
+    state.auctions = remaining;
+    checkAchievements(state);
+    commit();
+  }
+  return outcomes;
 }
 
 export function claimDaily(now) {

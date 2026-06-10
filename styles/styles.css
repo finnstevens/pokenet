@@ -1629,3 +1629,41 @@ footer {
   background: var(--neon-yellow); color: #111; font-family: 'Press Start 2P', monospace;
   font-size: 0.45rem; padding: 3px 5px; border-radius: 4px; transform: rotate(-8deg);
 }
+
+/* Card Show — trade button + trade modal */
+.show-item .show-trade { width: 100%; font-size: 0.55rem; padding: 7px 10px; border-color: var(--neon-purple); color: var(--neon-purple); margin-top: 4px; }
+.show-item .show-trade:hover { background: var(--neon-purple); color: #fff; box-shadow: 0 0 14px rgba(184,41,255,0.4); }
+.trade-modal { max-width: 720px; width: 92vw; }
+.trade-target-name { font-family: 'Bungee', sans-serif; font-size: 0.95rem; color: var(--ink); }
+.trade-target-price { color: var(--muted); font-size: 0.8rem; margin-top: 4px; }
+.trade-summary { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; margin: 14px 0; font-family: 'Press Start 2P', monospace; font-size: 0.55rem; }
+.trade-warn { color: var(--neon-pink); }
+.trade-hint { color: var(--muted); font-size: 0.72rem; text-align: center; margin-bottom: 14px; }
+.trade-offer-grid { max-height: 46vh; overflow-y: auto; padding: 4px; margin-bottom: 16px; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
+.mini-card.trade-selected { outline: 3px solid var(--neon-green); box-shadow: 0 0 16px rgba(57,255,20,0.5); }
+.trade-check { position: absolute; top: 4px; right: 4px; z-index: 3; color: var(--neon-green); font-weight: 700; filter: drop-shadow(0 0 4px rgba(57,255,20,0.9)); }
+#trade-complete { width: 100%; }
+#trade-complete:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Auction House (Events tab) */
+.auction-house { max-width: 920px; margin: 34px auto 0; }
+.auction-actions { text-align: center; margin: 4px 0 18px; }
+#auction-consign { border-color: var(--neon-purple); color: var(--neon-purple); }
+#auction-consign:hover { background: var(--neon-purple); color: #fff; box-shadow: 0 0 16px rgba(184,41,255,0.4); }
+.auction-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+.auction-lot { position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 8px; border-radius: 8px; background: #0a0a1a; border: 2px solid var(--neon-purple); }
+.auction-lot[data-rarity="common"]   { border-color: var(--r-common); }
+.auction-lot[data-rarity="uncommon"] { border-color: var(--r-uncommon); }
+.auction-lot[data-rarity="rare"]     { border-color: var(--r-rare); }
+.auction-lot[data-rarity="holo"]     { border-color: var(--r-holo); }
+.auction-lot[data-rarity="ultra"]    { border-color: var(--r-ultra); }
+.auction-lot[data-rarity="secret"]   { border-color: var(--r-secret); }
+.auction-bid { font-family: 'Press Start 2P', monospace; font-size: 0.55rem; color: var(--neon-green); }
+.auction-meta { font-size: 0.62rem; color: var(--muted); }
+.auction-meta.met { color: var(--neon-green); }
+.auction-timer { font-family: 'Press Start 2P', monospace; font-size: 0.5rem; color: var(--neon-yellow); }
+.consign-controls { display: flex; gap: 12px; align-items: center; justify-content: center; flex-wrap: wrap; margin: 12px 0; }
+.consign-reserve-label { font-size: 0.8rem; color: var(--muted); }
+#consign-reserve { width: 120px; display: inline-block; }
+.consign-modal { max-width: 720px; width: 92vw; }
+#consign-selected { font-family: 'Space Mono', monospace; font-size: 0.78rem; color: var(--ink); }
