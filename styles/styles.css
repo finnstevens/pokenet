@@ -1667,3 +1667,77 @@ footer {
 #consign-reserve { width: 120px; display: inline-block; }
 .consign-modal { max-width: 720px; width: 92vw; }
 #consign-selected { font-family: 'Space Mono', monospace; font-size: 0.78rem; color: var(--ink); }
+
+/* ===== Trade tab (offline trade-by-code) ===== */
+.trade-screen { max-width: 820px; margin: 0 auto; }
+.trade-import { margin-top: 26px; }
+.trade-textarea {
+  width: 100%; min-height: 90px; resize: vertical; margin: 10px 0;
+  background: #0a0a1a; border: 2px solid var(--neon-cyan); border-radius: 8px;
+  color: var(--ink); font-family: 'Space Mono', monospace; font-size: 0.72rem; padding: 10px;
+  word-break: break-all;
+}
+.trade-pending-card { border: 2px solid var(--neon-yellow); border-radius: 10px; padding: 16px; background: rgba(255,242,0,0.05); margin-bottom: 20px; }
+.trade-pending-head { font-family: 'Bungee', sans-serif; font-size: 0.85rem; color: var(--ink); }
+.trade-create, .trade-pending-card .actions { margin-top: 10px; }
+.trade-section { margin: 18px 0; }
+.trade-section h4 { font-family: 'Press Start 2P', monospace; font-size: 0.55rem; color: var(--neon-cyan); letter-spacing: 0.1em; margin-bottom: 10px; }
+.trade-sec-hint { font-family: 'Space Mono', monospace; font-size: 0.62rem; color: var(--muted); letter-spacing: 0; }
+.trade-offer-grid { max-height: 40vh; overflow-y: auto; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); }
+.trade-qty-list { display: flex; flex-direction: column; gap: 8px; }
+.trade-qty-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 0.8rem; color: var(--ink); }
+.trade-qty { width: 80px; }
+.trade-incoming-box, .trade-summary-bar {
+  background: #0a0a1a; border: 1px solid #2a2a44; border-radius: 8px; padding: 12px;
+  font-size: 0.82rem; color: var(--ink); text-align: center; margin: 12px 0;
+}
+.trade-summary-bar { border-color: var(--neon-green); color: var(--neon-green); font-family: 'Press Start 2P', monospace; font-size: 0.55rem; }
+
+/* ===== Trainer name badge + username modal ===== */
+.trainer-badge {
+  margin-top: 14px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  padding: 8px 14px;
+  border: 2px solid var(--neon-cyan);
+  background: rgba(0,240,255,0.08);
+  color: var(--neon-cyan);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.trainer-badge:hover { background: var(--neon-cyan); color: #051018; box-shadow: 0 0 16px rgba(0,240,255,0.5); }
+.username-modal { max-width: 420px; text-align: center; }
+.username-modal .search-box { width: 100%; margin: 14px 0; text-align: center; font-size: 1rem; }
+
+/* ===== Presence: who's online ===== */
+.online-panel {
+  max-width: 820px; margin: 0 auto 18px; padding: 14px 16px;
+  background: #0a0a1a; border: 2px solid #2a2a44; border-radius: 10px;
+}
+.online-head { font-family: 'Press Start 2P', monospace; font-size: 0.6rem; color: var(--neon-green); letter-spacing: 0.1em; }
+.online-head.offline { color: var(--muted); }
+.online-sub { font-size: 0.72rem; color: var(--muted); margin-top: 6px; }
+.online-sub code { color: var(--neon-cyan); }
+.online-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.online-user {
+  font-family: 'Space Mono', monospace; font-size: 0.74rem;
+  padding: 5px 11px; border-radius: 999px;
+  background: rgba(57,255,20,0.08); border: 1px solid var(--neon-green); color: var(--ink);
+}
+.online-user.me { border-color: var(--neon-yellow); background: rgba(255,242,0,0.1); color: var(--neon-yellow); }
+
+/* ===== Release notes overlay ===== */
+.footer-link { color: var(--neon-cyan); text-decoration: none; border-bottom: 1px dotted var(--neon-cyan); cursor: pointer; }
+.footer-link:hover { color: var(--neon-yellow); border-color: var(--neon-yellow); }
+.releases-modal { max-width: 640px; width: 92vw; max-height: 82vh; text-align: left; }
+.releases-body { max-height: 62vh; overflow-y: auto; margin-top: 14px; padding-right: 6px; }
+.release-entry { padding: 14px 0; border-bottom: 1px solid #2a2a44; }
+.release-entry:last-child { border-bottom: 0; }
+.release-date { font-family: 'Press Start 2P', monospace; font-size: 0.5rem; color: var(--neon-cyan); letter-spacing: 0.1em; }
+.release-title { font-family: 'Bungee', sans-serif; font-size: 0.95rem; color: var(--neon-yellow); margin: 6px 0 8px; }
+.release-items { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.release-items li { font-size: 0.82rem; color: var(--ink); line-height: 1.5; padding-left: 16px; position: relative; }
+.release-items li::before { content: '▸'; position: absolute; left: 0; color: var(--neon-pink); }
+.release-items strong { color: var(--neon-green); }

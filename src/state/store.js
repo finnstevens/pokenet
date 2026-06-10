@@ -17,6 +17,7 @@ const STORAGE_KEY = 'pokepack.save.v2';
 
 function freshState() {
   return {
+    username: null,      // trainer name (set on first run; shown in header + presence)
     money: STARTING_MONEY,
     packsOpened: 0,
     totalCards: 0,
@@ -36,6 +37,7 @@ function freshState() {
     lastCardShow: null,  // timestamp of the last card-show entry (1h cooldown)
     cardShowStock: null, // { generatedAt, items[] } — the current show's lineup
     auctions: [],        // [{ id, card, market, reserve, currentBid, aiMax, endsAt, aiNextAt }] — active sell lots
+    outgoingTrade: null, // { id, give: bundle, createdAt } — your escrowed pending trade offer
     lastOpen: {},        // setId -> timestamp (for cooldown-gated sets)
     selectedSet: FREE_SET_ID,
 
@@ -52,9 +54,10 @@ export const state = freshState();
 
 /* ---- persistence ---- */
 const PERSIST_KEYS = [
+  'username',
   'money', 'packsOpened', 'totalCards', 'binder', 'pendingSales', 'wishlist', 'locked', 'sealed', 'boxes',
   'sleeves', 'sleeved', 'grading', 'graded',
-  'achievements', 'lastDailyClaim', 'lastWork', 'lastCardShow', 'cardShowStock', 'auctions',
+  'achievements', 'lastDailyClaim', 'lastWork', 'lastCardShow', 'cardShowStock', 'auctions', 'outgoingTrade',
   'lastOpen', 'selectedSet', 'currentFilter', 'binderTab', 'shopTab', 'sort',
 ];
 
@@ -408,6 +411,114 @@ export function processAuctions(now) {
   return outcomes;
 }
 
+/* ---- trade with friends (offline, by share code) ---- */
+/* A bundle = { cards:[snapshot], packs:{setId:count}, boxes:[{setId,packs}], money }. */
+
+export function bundleHasContent(b) {
+  return !!b && ((b.cards || []).length > 0 || Object.keys(b.packs || {}).length > 0 || (b.boxes || []).length > 0 || (b.money || 0) > 0);
+}
+
+/* Can the player currently hand over this whole bundle? */
+export function ownsBundle(b) {
+  if (!b) return false;
+  if ((b.money || 0) > state.money) return false;
+  const need = {};
+  for (const c of (b.cards || [])) need[c.uid] = (need[c.uid] || 0) + 1;
+  for (const [uid, n] of Object.entries(need)) {
+    const e = state.binder[uid];
+    if (!e || e.count < n) return false;
+    if (state.locked.includes(uid) || state.sleeved.includes(uid)) return false;
+  }
+  for (const [setId, n] of Object.entries(b.packs || {})) {
+    if ((state.sealed[setId] || 0) < n) return false;
+  }
+  const boxNeed = {};
+  for (const bx of (b.boxes || [])) boxNeed[bx.setId] = (boxNeed[bx.setId] || 0) + 1;
+  for (const [setId, n] of Object.entries(boxNeed)) {
+    if ((state.boxes[setId] || []).length < n) return false;
+  }
+  return true;
+}
+
+function removeBundle(b) {
+  if (b.money) state.money = +(state.money - b.money).toFixed(2);
+  for (const c of (b.cards || [])) {
+    const e = state.binder[c.uid];
+    if (e) { e.count--; if (e.count <= 0) delete state.binder[c.uid]; }
+  }
+  for (const [setId, n] of Object.entries(b.packs || {})) {
+    state.sealed[setId] = (state.sealed[setId] || 0) - n;
+    if (state.sealed[setId] <= 0) delete state.sealed[setId];
+  }
+  const byset = {};
+  for (const bx of (b.boxes || [])) (byset[bx.setId] = byset[bx.setId] || []).push(bx.packs);
+  for (const [setId, list] of Object.entries(byset)) {
+    const arr = state.boxes[setId] || [];
+    for (const p of list) {
+      let idx = arr.indexOf(p);
+      if (idx < 0) idx = 0;
+      if (arr.length) arr.splice(idx, 1);
+    }
+    if (!arr.length) delete state.boxes[setId];
+  }
+}
+
+function addBundle(b, now) {
+  if (b.money) state.money = +(state.money + b.money).toFixed(2);
+  for (const c of (b.cards || [])) {
+    if (!state.binder[c.uid]) state.binder[c.uid] = freshBinderEntry(c, now);
+    state.binder[c.uid].count++;
+    state.totalCards++;
+  }
+  for (const [setId, n] of Object.entries(b.packs || {})) {
+    state.sealed[setId] = (state.sealed[setId] || 0) + n;
+  }
+  for (const bx of (b.boxes || [])) {
+    (state.boxes[bx.setId] = state.boxes[bx.setId] || []).push(bx.packs);
+  }
+}
+
+/* Create a pending outgoing offer: escrow the bundle (remove from your state). */
+export function createTradeOffer(bundle, now) {
+  if (state.outgoingTrade) return { error: 'pending' };
+  if (!bundleHasContent(bundle)) return { error: 'empty' };
+  if (!ownsBundle(bundle)) return { error: 'unowned' };
+  removeBundle(bundle);
+  state.outgoingTrade = { id: `${now}-${Math.floor(Math.random() * 1e6)}`, give: bundle, createdAt: now };
+  commit();
+  return { ok: true, trade: state.outgoingTrade };
+}
+
+/* Cancel your pending offer → escrow returns to you. */
+export function cancelTradeOffer(now) {
+  if (!state.outgoingTrade) return null;
+  addBundle(state.outgoingTrade.give, now);
+  state.outgoingTrade = null;
+  commit();
+  return { ok: true };
+}
+
+/* Accept a friend's offer: receive their bundle, hand over your return bundle.
+   Returns the confirmation payload { id, give } to encode back to them. */
+export function acceptIncomingOffer(offer, myReturn, now) {
+  if (!offer || !offer.id) return { error: 'invalid' };
+  if (!ownsBundle(myReturn)) return { error: 'unowned' };
+  removeBundle(myReturn);
+  addBundle(offer.give || {}, now);
+  commit();
+  return { ok: true, confirm: { id: offer.id, give: myReturn } };
+}
+
+/* Finalize your offer with a friend's confirmation: receive their return bundle. */
+export function finalizeTrade(confirm, now) {
+  if (!state.outgoingTrade) return { error: 'no-offer' };
+  if (!confirm || confirm.id !== state.outgoingTrade.id) return { error: 'mismatch' };
+  addBundle(confirm.give || {}, now);
+  state.outgoingTrade = null;
+  commit();
+  return { ok: true };
+}
+
 export function claimDaily(now) {
   if (dailyCooldownRemaining(state.lastDailyClaim, now) > 0) return 0;
   state.lastDailyClaim = now;
@@ -547,6 +658,10 @@ export function listSlabForSale(slabId, now) {
   return sale;
 }
 
+export function setUsername(name) {
+  state.username = (name || '').trim().slice(0, 20) || 'Trainer';
+  commit();
+}
 export function setSelectedSet(id) { state.selectedSet = id; commit(); }
 export function setFilter(f)       { state.currentFilter = f; commit(); }
 export function setBinderTab(t)    { state.binderTab = t; commit(); }

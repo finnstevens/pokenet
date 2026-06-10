@@ -12,6 +12,10 @@ import { initBinder, renderBinder } from './ui/binder.js';
 import { initShop, renderShop } from './ui/shop.js';
 import { initWork, renderWork } from './ui/work.js';
 import { initEvents, renderEvents } from './ui/events.js';
+import { initTrade, renderTrade } from './ui/trade.js';
+import { initUsername, renderUsername } from './ui/username.js';
+import { initPresence, setPresenceName } from './ui/presence.js';
+import { initReleases } from './ui/releases.js';
 import { renderStats } from './ui/stats.js';
 
 /* ---- boot ---- */
@@ -25,6 +29,10 @@ initBinder();
 initShop();
 initWork();
 initEvents();
+initTrade();
+initPresence();
+initUsername(setPresenceName);
+initReleases();
 
 wireTabs();
 wireBinderControls();
@@ -38,6 +46,8 @@ subscribe(() => {
   renderShop();
   renderWork();
   renderEvents();
+  renderTrade();
+  renderUsername();
 });
 
 // Initial paint.
@@ -47,6 +57,7 @@ renderBinder();
 renderShop();
 renderWork();
 renderEvents();
+renderTrade();
 
 /* ---- tab navigation ---- */
 function wireTabs() {
@@ -66,6 +77,7 @@ function wireTabs() {
     if (name === 'binder') renderBinder();
     if (name === 'work') renderWork();
     if (name === 'events') renderEvents();
+    if (name === 'trade') renderTrade();
   });
 }
 

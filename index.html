@@ -18,6 +18,7 @@
   <header>
     <h1 class="logo">POKÉPACK<span>// booster simulator v2.0</span></h1>
     <p class="sub">/// rip · reveal · repeat ///</p>
+    <button class="trainer-badge" id="trainer-badge" title="Click to rename">👤 TRAINER</button>
   </header>
 
   <div class="stats" id="stats">
@@ -52,6 +53,7 @@
     <button class="tab" data-tab="binder">Binder</button>
     <button class="tab" data-tab="work">Work</button>
     <button class="tab" data-tab="events">Events</button>
+    <button class="tab" data-tab="trade">Trade</button>
   </nav>
 
   <!-- BINDER VIEW -->
@@ -247,7 +249,49 @@
     </div>
   </section>
 
-  <footer>© POKÉPACK SIM · NOT AFFILIATED WITH NINTENDO</footer>
+  <!-- TRADE VIEW (offline trade-by-code with friends) -->
+  <section class="view" id="view-trade">
+    <div class="binder-head"><h2 class="section-title">// Trade with a Friend</h2></div>
+    <div class="online-panel" id="online-panel"></div>
+    <p class="cardshow-sub" style="text-align:center;max-width:680px;margin:0 auto 18px;">
+      Fully offline — no accounts. Make an offer → send the code to a friend → they import it, add their return, and send a confirmation code back → you import it. Done.
+    </p>
+
+    <div id="trade-home" class="trade-screen">
+      <div id="trade-pending"></div>
+      <div class="trade-import">
+        <h3 class="show-section-title">Import a code</h3>
+        <textarea id="trade-import-input" class="trade-textarea" placeholder="Paste a POKETRADE… code from a friend"></textarea>
+        <button class="btn primary" id="trade-import-btn">Import code</button>
+      </div>
+    </div>
+
+    <div id="trade-builder" class="trade-screen" style="display:none;">
+      <h3 class="show-section-title" id="trade-builder-title">Create an offer</h3>
+      <div id="trade-incoming"></div>
+      <div class="trade-section"><h4>Cards <span class="trade-sec-hint">(click to add; locked/sleeved excluded)</span></h4><div class="binder-grid trade-offer-grid" id="tb-cards"></div></div>
+      <div class="trade-section"><h4>Sealed packs</h4><div id="tb-packs" class="trade-qty-list"></div></div>
+      <div class="trade-section"><h4>Booster boxes</h4><div id="tb-boxes" class="trade-qty-list"></div></div>
+      <div class="trade-section"><h4>Money</h4><input id="tb-money" class="search-box" type="number" min="0" step="0.01" value="0"></div>
+      <div class="trade-summary-bar" id="tb-summary"></div>
+      <div class="actions">
+        <button class="btn primary" id="tb-confirm">Create Offer</button>
+        <button class="btn" id="tb-back">Back</button>
+      </div>
+    </div>
+
+    <div id="trade-code-screen" class="trade-screen" style="display:none;">
+      <h3 class="show-section-title" id="trade-code-title">Your code</h3>
+      <p class="cardshow-sub" id="trade-code-sub"></p>
+      <textarea id="trade-code-output" class="trade-textarea" readonly></textarea>
+      <div class="actions">
+        <button class="btn primary" id="trade-code-copy">Copy code</button>
+        <button class="btn" id="trade-code-done">Done</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>© POKÉPACK SIM · NOT AFFILIATED WITH NINTENDO · <a href="#" id="releases-link" class="footer-link">Release Notes</a></footer>
 </div>
 
 <!-- Modal root -->
@@ -281,6 +325,25 @@
     </div>
     <p class="trade-hint">Pick a card, then set your reserve (asking) price — it sells only if the bids reach it.</p>
     <div class="binder-grid trade-offer-grid" id="consign-offer"></div>
+  </div>
+</div>
+
+<!-- Release notes overlay -->
+<div class="modal-backdrop" id="releases-backdrop">
+  <div class="modal releases-modal" id="releases-modal">
+    <button class="modal-close" id="releases-close" aria-label="close">×</button>
+    <div class="modal-name">📋 What's New</div>
+    <div class="releases-body" id="releases-body"></div>
+  </div>
+</div>
+
+<!-- Username modal -->
+<div class="modal-backdrop" id="username-backdrop">
+  <div class="modal username-modal" id="username-modal">
+    <div class="modal-name">Choose your trainer name</div>
+    <p class="trade-hint">Shown in your header and to friends online (when running locally).</p>
+    <input id="username-input" class="search-box" maxlength="20" placeholder="e.g. Ash" autocomplete="off">
+    <button class="btn primary" id="username-save">Save</button>
   </div>
 </div>
 
