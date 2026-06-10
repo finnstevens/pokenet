@@ -86,6 +86,13 @@ export function workCooldownRemaining(lastWork, now) {
   return cooldownRemaining(lastWork, WORK_COOLDOWN_MS, now);
 }
 
+/* ---- card show event ---- */
+export const CARD_SHOW_COOLDOWN_MS = 60 * 60 * 1000; // a new show every hour
+
+export function cardShowCooldownRemaining(lastCardShow, now) {
+  return cooldownRemaining(lastCardShow, CARD_SHOW_COOLDOWN_MS, now);
+}
+
 export function formatCooldown(ms) {
   const totalSec = Math.ceil(ms / 1000);
   if (totalSec < 60) return `${totalSec}s`;

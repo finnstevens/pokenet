@@ -1588,3 +1588,44 @@ footer {
 .work-card[data-rarity="holo"]     { border-color: var(--r-holo); }
 .work-card[data-rarity="ultra"]    { border-color: var(--r-ultra); }
 .work-card[data-rarity="secret"]   { border-color: var(--r-secret); }
+
+/* ===== Events tab — Card Show ===== */
+.cardshow { max-width: 920px; margin: 0 auto; }
+.cardshow-head { text-align: center; margin-bottom: 24px; }
+.cardshow-title { font-family: 'Bungee', sans-serif; font-size: 1.3rem; color: var(--neon-yellow); text-shadow: 0 0 16px rgba(255,242,0,0.4); }
+.cardshow-sub { color: var(--muted); font-size: 0.82rem; margin: 8px 0 16px; }
+#cardshow-enter { font-size: 0.8rem; padding: 14px 28px; }
+
+.show-section-title {
+  font-family: 'Press Start 2P', monospace; font-size: 0.6rem; color: var(--neon-cyan);
+  letter-spacing: 0.12em; margin: 22px 0 12px; text-transform: uppercase;
+}
+.show-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+.show-item {
+  position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  padding: 8px; border-radius: 8px; background: #0a0a1a;
+  border: 2px solid var(--r-rare);
+}
+.show-item[data-rarity="common"]   { border-color: var(--r-common); }
+.show-item[data-rarity="uncommon"] { border-color: var(--r-uncommon); }
+.show-item[data-rarity="rare"]     { border-color: var(--r-rare); }
+.show-item[data-rarity="holo"]     { border-color: var(--r-holo); }
+.show-item[data-rarity="ultra"]    { border-color: var(--r-ultra); }
+.show-item[data-rarity="secret"]   { border-color: var(--r-secret); box-shadow: 0 0 14px rgba(255,0,230,0.35); }
+.show-item.sold { opacity: 0.45; }
+.show-art { width: 100%; aspect-ratio: 5/7; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.show-art img { width: 100%; height: 100%; object-fit: contain; }
+.show-art img.img-fail { opacity: 0; }
+.show-synth { font-size: 2.4rem; color: var(--muted); }
+.show-name { font-family: 'Space Mono', monospace; font-size: 0.62rem; text-align: center; color: var(--ink); line-height: 1.2; }
+.show-pricetag { font-family: 'Press Start 2P', monospace; font-size: 0.5rem; }
+.show-price { color: var(--neon-green); }
+.show-price.deal { color: var(--neon-yellow); }
+.show-list { color: var(--muted); text-decoration: line-through; margin-right: 4px; }
+.show-item .show-buy { width: 100%; font-size: 0.55rem; padding: 7px 10px; }
+.show-item .show-buy.disabled-look { opacity: 0.5; }
+.deal-badge {
+  position: absolute; top: 5px; left: 5px; z-index: 3;
+  background: var(--neon-yellow); color: #111; font-family: 'Press Start 2P', monospace;
+  font-size: 0.45rem; padding: 3px 5px; border-radius: 4px; transform: rotate(-8deg);
+}

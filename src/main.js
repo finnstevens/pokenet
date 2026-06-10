@@ -11,6 +11,7 @@ import { initPack, renderPicker } from './ui/pack.js';
 import { initBinder, renderBinder } from './ui/binder.js';
 import { initShop, renderShop } from './ui/shop.js';
 import { initWork, renderWork } from './ui/work.js';
+import { initEvents, renderEvents } from './ui/events.js';
 import { renderStats } from './ui/stats.js';
 
 /* ---- boot ---- */
@@ -23,6 +24,7 @@ initPack();
 initBinder();
 initShop();
 initWork();
+initEvents();
 
 wireTabs();
 wireBinderControls();
@@ -35,6 +37,7 @@ subscribe(() => {
   renderBinder();
   renderShop();
   renderWork();
+  renderEvents();
 });
 
 // Initial paint.
@@ -43,6 +46,7 @@ renderPicker();
 renderBinder();
 renderShop();
 renderWork();
+renderEvents();
 
 /* ---- tab navigation ---- */
 function wireTabs() {
@@ -61,6 +65,7 @@ function wireTabs() {
     if (name === 'shop') renderShop();
     if (name === 'binder') renderBinder();
     if (name === 'work') renderWork();
+    if (name === 'events') renderEvents();
   });
 }
 

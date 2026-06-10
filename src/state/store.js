@@ -32,6 +32,8 @@ function freshState() {
     achievements: [],    // [achievementId]
     lastDailyClaim: null,
     lastWork: null,      // timestamp of the last completed work shift (cooldown)
+    lastCardShow: null,  // timestamp of the last card-show entry (1h cooldown)
+    cardShowStock: null, // { generatedAt, items[] } — the current show's lineup
     lastOpen: {},        // setId -> timestamp (for cooldown-gated sets)
     selectedSet: FREE_SET_ID,
 
@@ -50,7 +52,8 @@ export const state = freshState();
 const PERSIST_KEYS = [
   'money', 'packsOpened', 'totalCards', 'binder', 'pendingSales', 'wishlist', 'locked', 'sealed', 'boxes',
   'sleeves', 'sleeved', 'grading', 'graded',
-  'achievements', 'lastDailyClaim', 'lastWork', 'lastOpen', 'selectedSet', 'currentFilter', 'binderTab', 'shopTab', 'sort',
+  'achievements', 'lastDailyClaim', 'lastWork', 'lastCardShow', 'cardShowStock',
+  'lastOpen', 'selectedSet', 'currentFilter', 'binderTab', 'shopTab', 'sort',
 ];
 
 let saveTimer = null;
@@ -272,6 +275,43 @@ export function processSales(now) {
 export function markWorked(now) {
   state.lastWork = now;
   commit();
+}
+
+/* ---- card show event ---- */
+
+/* Enter the show: set the freshly-generated lineup and start the 1h cooldown. */
+export function enterCardShow(stock, now) {
+  state.cardShowStock = stock;
+  state.lastCardShow = now;
+  commit();
+}
+
+/* Buy one item from the current show lineup. Charges money and routes it:
+   single → binder (gradeable, no packsOpened bump), pack → sealed, box → boxes.
+   Marks the item sold. Returns { ok, item } / { error } / null. */
+export function buyShowItem(itemId, now) {
+  const stock = state.cardShowStock;
+  if (!stock) return null;
+  const item = stock.items.find(i => i.id === itemId && !i.sold);
+  if (!item) return null;
+  if (state.money < item.price) return { error: 'money' };
+
+  state.money = +(state.money - item.price).toFixed(2);
+  if (item.kind === 'single') {
+    const c = item.card;
+    if (!state.binder[c.uid]) state.binder[c.uid] = freshBinderEntry(c, now);
+    state.binder[c.uid].count++;
+    state.totalCards++;
+  } else if (item.kind === 'pack') {
+    state.sealed[item.setId] = (state.sealed[item.setId] || 0) + 1;
+  } else if (item.kind === 'box') {
+    if (!state.boxes[item.setId]) state.boxes[item.setId] = [];
+    state.boxes[item.setId].push(item.packs);
+  }
+  item.sold = true;
+  checkAchievements(state);
+  commit();
+  return { ok: true, item };
 }
 
 export function claimDaily(now) {
