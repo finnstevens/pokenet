@@ -23,4 +23,4 @@ Naming: `YYYY-MM-DD-slug.md`. Status: Draft → Approved → Built → Verified 
 | 2026-06-09 | [Open 5 sealed packs at once](2026-06-09-open-five-sealed.md) | Shipped |
 | 2026-06-09 | [Lock graded (PSA) slabs](2026-06-09-lock-graded-slabs.md) | Shipped |
 | 2026-06-09 | [Add a 151 booster box](2026-06-09-151-box.md) | Shipped |
-| 2026-06-10 | [Card Show event (Events tab)](2026-06-10-card-show-event.md) | Verified |
+| 2026-06-10 | [Card Show event (Events tab)](2026-06-10-card-show-event.md) | Shipped |

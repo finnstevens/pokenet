@@ -2,7 +2,7 @@
 title: Card Show event (Events tab)
 date: 2026-06-10
 slug: card-show-event
-status: Verified   # Draft → Approved → Built → Verified → Shipped
+status: Shipped   # Draft → Approved → Built → Verified → Shipped
 owner: finn
 ---
 
@@ -97,4 +97,4 @@ Events tab + view; `main.js` wiring; `styles.css` show items + DEAL badge.
 All acceptance criteria met.
 
 ## Changelog
-- `<pending>` — Add the Card Show event (Events tab)
+- `f23aa9b` — Add the Card Show event (Events tab); deployed ✓
