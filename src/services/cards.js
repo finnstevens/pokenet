@@ -10,7 +10,7 @@
 import { RARITY_FALLBACK } from './prices.js';
 
 const API = 'https://api.pokemontcg.io/v2/cards';
-const CACHE_PREFIX = 'pokepack.set.v4.'; // bump to recompute (v4: GX/VMAX → ultra tiering)
+const CACHE_PREFIX = 'pokepack.set.v5.'; // bump to recompute (v5: representative-variant pricing)
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // refresh prices ~daily
 
 const memo = new Map();      // apiSetId -> normalized cards[]
@@ -42,16 +42,28 @@ export function rarityToTier(rarityStr) {
   return 'rare';
 }
 
-/* The canonical price is the AVERAGE of the card's variant market prices, not
-   the cheapest single variant. Each variant's own figure is TCGplayer's
-   "market" (a rolling average of real sales), so this blends, e.g., a card's
-   normal and reverse-holo printings into one representative value rather than
-   showing only the lowest. (A card pulled specifically in the reverse-holo slot
-   is still priced at its reverseHolofoil figure in game/packs.js.) */
-function averagePrice(variantMap) {
-  const vals = Object.values(variantMap);
-  if (!vals.length) return null;
-  return vals.reduce((a, b) => a + b, 0) / vals.length;
+/* The canonical price is ONE representative printing's TCGplayer "market" figure
+   — NOT an average of all variants (which blends distinct printings that should
+   be valued separately, e.g. a vintage card's 1st-Edition vs Unlimited holo).
+   We pick the card's main finish, treat the game as Unlimited (skip 1st-Edition
+   premiums), and only fall back to 1st-Edition / cheapest if nothing else exists.
+   (A card pulled in the reverse-holo slot is still re-priced to its
+   reverseHolofoil figure in game/packs.js — the `prices` map is kept intact.) */
+const PRICE_VARIANT_PRIORITY = [
+  'holofoil', 'normal', 'unlimitedHolofoil', 'unlimited', 'reverseHolofoil',
+  '1stEditionHolofoil', '1stEditionNormal', '1stEdition',
+];
+function representativePrice(variantMap) {
+  const keys = Object.keys(variantMap);
+  if (!keys.length) return null;
+  for (const v of PRICE_VARIANT_PRIORITY) {
+    if (variantMap[v] != null) return variantMap[v];
+  }
+  // No known variant name matched — prefer a non-1st-Edition printing, else any;
+  // take the cheapest of that pool (closest to what you'd actually pull).
+  const nonFirst = keys.filter(k => !/1stedition/i.test(k));
+  const pool = (nonFirst.length ? nonFirst : keys).map(k => variantMap[k]);
+  return Math.min(...pool);
 }
 
 /* Variant -> market price, for the slots that want a specific variant
@@ -70,8 +82,8 @@ function variantPrices(prices) {
 export function normalizeCard(c) {
   const tier = rarityToTier(c.rarity);
   const prices = variantPrices(c.tcgplayer?.prices);
-  const avg = averagePrice(prices);
-  const price = avg != null ? +avg.toFixed(2) : (RARITY_FALLBACK[tier] ?? 0.25);
+  const rep = representativePrice(prices);
+  const price = rep != null ? +rep.toFixed(2) : (RARITY_FALLBACK[tier] ?? 0.25);
   return {
     uid: c.id,                                   // e.g. "sv8pt5-6" — unique per printing
     name: c.name,

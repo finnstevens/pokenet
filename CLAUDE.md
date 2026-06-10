@@ -68,7 +68,7 @@ picker, binder, shop.
 
 ## Real-card system (`services/cards.js`) — the core
 - `loadSet(apiSetId)`: ONE request `GET pokemontcg.io/v2/cards?q=set.id:<id>&pageSize=250`,
-  normalizes each card, caches in memory + `localStorage` key `pokepack.set.v4.<id>`
+  normalizes each card, caches in memory + `localStorage` key `pokepack.set.v5.<id>`
   (24h TTL). Falls back to any cached copy on network failure. All sets are
   pre-warmed on boot (`pack.js`) so the picker is correct immediately.
 - Normalized card: `{ uid, name, number, rarity, tier, setId, setName, image, price, prices }`.
@@ -78,14 +78,17 @@ picker, binder, shop.
   before `common`; `special illustration`→secret before `illustration`→holo;
   `\bex\b`→ultra (ex-era "Rare Holo EX") before `holo`; bare `holo`→holo (vintage
   "Rare Holo"). Adding a set with a new rarity string? extend this map.
-- **Card price = the average of the card's variant market prices** (TCGplayer
-  `market`, never `low`). The reverse-holo slot re-prices to `reverseHolofoil`
-  in `packs.js`. Missing prices fall back to `RARITY_FALLBACK[tier]`.
-- **If you change normalization/pricing, bump `CACHE_PREFIX`** (`.v4.` → `.v5.`)
+- **Card price = ONE representative variant's market price** (TCGplayer `market`,
+  never `low`) — picked by priority `holofoil → normal → unlimitedHolofoil →
+  unlimited → reverseHolofoil → 1stEdition*`, else cheapest non-1st-Edition. NOT an
+  average of variants (averaging blended distinct printings like a vintage card's
+  1st-Edition vs Unlimited holo). The reverse-holo slot still re-prices to
+  `reverseHolofoil` in `packs.js`. Missing prices fall back to `RARITY_FALLBACK[tier]`.
+- **If you change normalization/pricing, bump `CACHE_PREFIX`** (`.v5.` → `.v6.`)
   so cached set data is recomputed.
 
 ## Pricing model (two different things — don't conflate)
-- **Card price** = real averaged market value (above). Accurate; verified.
+- **Card price** = real representative-variant market value (above). Accurate; verified.
 - **Pack price** = each set's **real sealed single-pack market price**, hardcoded
   as `cost`/`sealedPrice` in `sets.js` (the card API has no sealed-product
   prices). `costOf(set)` in `pack.js` just returns `set.cost`. This is why
@@ -132,7 +135,7 @@ picker, binder, shop.
 - `pokepack.save.v2` — the save (money, binder by uid, sealed, wishlist, locked,
   pendingSales, achievements, timers, UI tab/filter/sort). A migration maps the
   old `shards` field → `money`.
-- `pokepack.set.v4.<apiSetId>` — cached set card data (24h TTL).
+- `pokepack.set.v5.<apiSetId>` — cached set card data (24h TTL).
 
 ## Hosting / deploy
 - Repo: **github.com/finnstevens/pokenet** (`main`). `gh` CLI at `~/.local/bin/gh`.

@@ -26,3 +26,4 @@ Naming: `YYYY-MM-DD-slug.md`. Status: Draft → Approved → Built → Verified 
 | 2026-06-10 | [Card Show event (Events tab)](2026-06-10-card-show-event.md) | Shipped |
 | 2026-06-10 | [Trading at the Card Show](2026-06-10-card-show-trading.md) | Shipped |
 | 2026-06-10 | [Auction House (Events tab)](2026-06-10-auction-house.md) | Shipped |
+| 2026-06-10 | [Representative card prices](2026-06-10-representative-card-prices.md) | Verified |
