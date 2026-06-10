@@ -284,11 +284,24 @@ export function markWorked(now) {
 
 /* ---- card show event ---- */
 
-/* Enter the show: set the freshly-generated lineup and start the 1h cooldown. */
+/* Enter the show: set the freshly-generated lineup and stamp attendance (gates
+   re-entry until the top of the next clock hour). */
 export function enterCardShow(stock, now) {
   state.cardShowStock = stock;
   state.lastCardShow = now;
   commit();
+}
+
+/* Clear a lineup left over from a previous clock hour (the show closed at HH:00).
+   Returns true if it cleared something. */
+export function expireCardShow(now) {
+  const s = state.cardShowStock;
+  if (s && Math.floor(s.generatedAt / 3600000) < Math.floor(now / 3600000)) {
+    state.cardShowStock = null;
+    commit();
+    return true;
+  }
+  return false;
 }
 
 /* Route a granted show item into the right inventory and mark it sold.

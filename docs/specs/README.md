@@ -30,3 +30,4 @@ Naming: `YYYY-MM-DD-slug.md`. Status: Draft → Approved → Built → Verified 
 | 2026-06-10 | [Trade with friends by share code](2026-06-10-trade-by-code.md) | Shipped |
 | 2026-06-10 | [Usernames + LAN presence](2026-06-10-usernames-and-presence.md) | Shipped |
 | 2026-06-10 | [Release notes page](2026-06-10-release-notes.md) | Shipped |
+| 2026-06-10 | [Card Show — clock-aligned hourly stock](2026-06-10-card-show-hourly.md) | Verified |

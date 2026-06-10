@@ -86,11 +86,20 @@ export function workCooldownRemaining(lastWork, now) {
   return cooldownRemaining(lastWork, WORK_COOLDOWN_MS, now);
 }
 
-/* ---- card show event ---- */
-export const CARD_SHOW_COOLDOWN_MS = 60 * 60 * 1000; // a new show every hour
+/* ---- card show event (clock-aligned: a new show at the top of every hour) ---- */
+export const CARD_SHOW_COOLDOWN_MS = 60 * 60 * 1000; // one hour (kept for reference)
 
+/* Which clock hour a timestamp falls in. */
+export function hourBucket(ts) {
+  return Math.floor(ts / CARD_SHOW_COOLDOWN_MS);
+}
+
+/* 0 if a show is available now (you haven't attended this clock hour); otherwise
+   the ms until the next top-of-hour (HH:00). */
 export function cardShowCooldownRemaining(lastCardShow, now) {
-  return cooldownRemaining(lastCardShow, CARD_SHOW_COOLDOWN_MS, now);
+  if (!lastCardShow) return 0;
+  if (hourBucket(lastCardShow) < hourBucket(now)) return 0; // a new clock hour began
+  return CARD_SHOW_COOLDOWN_MS - (now % CARD_SHOW_COOLDOWN_MS); // attended this hour
 }
 
 export function formatCooldown(ms) {

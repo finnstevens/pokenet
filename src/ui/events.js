@@ -3,7 +3,7 @@
    show discount. Stock generation is in game/cardshow.js; the lineup persists in
    state so you can keep buying until the next show. */
 
-import { state, enterCardShow, buyShowItem, tradeForShowItem, isLocked, isSleeved,
+import { state, enterCardShow, expireCardShow, buyShowItem, tradeForShowItem, isLocked, isSleeved,
          consignCard, processAuctions } from '../state/store.js';
 import { SETS } from '../data/sets.js';
 import { loadedSet } from '../services/cards.js';
@@ -86,6 +86,7 @@ export function initEvents() {
   // the countdowns live while on the Events tab.
   setInterval(() => {
     const now = Date.now();
+    expireCardShow(now); // close last hour's show at the top of the hour
     processAuctions(now).forEach(o => {
       if (o.type === 'sold') { playCoin(); toast('Sold at auction!', `${o.card.name} → +${formatPrice(o.amount)}`); }
       else toast('Unsold', `${o.card.name} missed its ${formatPrice(o.reserve)} reserve — returned to your binder.`);
@@ -192,7 +193,7 @@ export function renderEvents() {
   if (remaining > 0) {
     headEl.innerHTML = `
       <div class="cardshow-title">🎪 Card Show</div>
-      <div class="cardshow-sub">Next show in <strong style="color:var(--neon-yellow)">${formatCooldown(remaining)}</strong>${stock ? ' · browse this show\'s remaining stock below' : ''}</div>`;
+      <div class="cardshow-sub">Next show at the top of the hour — <strong style="color:var(--neon-yellow)">${formatCooldown(remaining)}</strong>${stock ? ' · browse this show\'s remaining stock below' : ''}</div>`;
   } else {
     headEl.innerHTML = `
       <div class="cardshow-title">🎪 Card Show is in town!</div>
