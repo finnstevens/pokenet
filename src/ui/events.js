@@ -14,6 +14,7 @@ import { playClick, playCoin } from '../services/audio.js';
 import { toast } from './toast.js';
 
 let headEl, stockEl;
+let exploringSeller = null; // which seller's collection is being explored (UI-only)
 let tradeBackdrop, tradeTargetEl, tradeSummaryEl, tradeOfferEl, tradeCompleteBtn;
 let tradeItemId = null;
 const tradeSelected = new Set(); // offered uids (one copy each)
@@ -33,6 +34,10 @@ export function initEvents() {
     if (e.target.closest('#cardshow-enter')) enterShow();
   });
   stockEl.addEventListener('click', e => {
+    const tile = e.target.closest('.seller-tile');
+    if (tile) { exploringSeller = tile.dataset.seller; renderEvents(); return; }
+    if (e.target.closest('.seller-back')) { exploringSeller = null; renderEvents(); return; }
+
     const tradeBtn = e.target.closest('.show-trade');
     if (tradeBtn) { openTrade(tradeBtn.dataset.item); return; }
 
@@ -180,8 +185,9 @@ function enterShow() {
   const pool = deckPool();
   if (!pool.length) { toast('Setting up…', 'The card show is still unpacking — try again in a moment.'); return; }
   playClick();
+  exploringSeller = null;
   enterCardShow(generateStock(pool, SETS, Date.now()), Date.now());
-  toast('Welcome to the Card Show!', 'Grab some deals — singles, packs, and a box.');
+  toast('Welcome to the Card Show!', 'Explore the sellers\' collections — mostly hits, plus packs & a box.');
   renderEvents();
 }
 
@@ -287,8 +293,39 @@ function renderStock(stock) {
     <h3 class="show-section-title">${title}</h3>
     <div class="show-grid">${items.map(itemHTML).join('')}</div>` : '';
 
+  const sellers = stock.sellers || [];
+  const sellerSingles = sid => stock.items.filter(i => i.kind === 'single' && i.sellerId === sid);
+  let singlesHTML;
+
+  if (sellers.length && exploringSeller && sellers.some(s => s.id === exploringSeller)) {
+    // Exploring one seller's collection.
+    const seller = sellers.find(s => s.id === exploringSeller);
+    const cards = sellerSingles(seller.id);
+    singlesHTML = `
+      <div class="seller-explore-head">
+        <button class="btn seller-back">← Sellers</button>
+        <h3 class="show-section-title">${seller.name}'s collection</h3>
+      </div>
+      <div class="show-grid">${cards.map(itemHTML).join('')}</div>`;
+  } else if (sellers.length) {
+    // Seller list — explore one to find cards.
+    singlesHTML = `
+      <h3 class="show-section-title">Sellers — explore a collection to find cards</h3>
+      <div class="seller-list">${sellers.map(s => {
+        const cards = sellerSingles(s.id);
+        const left = cards.filter(c => !c.sold).length;
+        return `<button class="seller-tile${left === 0 ? ' sold-out' : ''}" data-seller="${s.id}">
+          <span class="seller-name">🧑 ${s.name}</span>
+          <span class="seller-count">${left}/${cards.length} cards</span>
+        </button>`;
+      }).join('')}</div>`;
+  } else {
+    // Old-format stock (no sellers) — flat singles fallback.
+    singlesHTML = section('Singles', group('single'));
+  }
+
   stockEl.innerHTML =
-    section('Singles', group('single')) +
+    singlesHTML +
     section('Sealed Packs', group('pack')) +
     section('Booster Box', group('box'));
 }

@@ -1,31 +1,33 @@
-/* Card Show stock generation (pure, testable). Builds a one-time lineup of real
-   single cards (market price, with a couple of below-market deals), a few packs,
-   and a box — all at a small show discount. The singles draw is weighted toward
-   rarer cards so there's a chase. No DOM here. */
+/* Card Show stock generation (pure, testable). Singles are organised into a few
+   SELLERS — you explore a seller's collection to find cards. Collections are
+   hit-weighted (~80% rare/holo/ultra/secret), so few commons/uncommons are sold.
+   Plus a few discounted sealed packs and a discounted box. No DOM here.
+   `items` stays a flat array (singles tagged with `sellerId`, + packs + box) so
+   the buy/trade-by-id logic in the store is unchanged. */
 
 import { RARITY_FALLBACK } from '../services/prices.js';
 
-export const SINGLES_COUNT = 6;
+export const SELLERS_COUNT = 3;
+export const CARDS_PER_SELLER = 8;
 export const PACKS_COUNT = 3;
-const DEALS = 2;            // how many singles are below-market deals
+const DEALS = 3;           // how many singles (across the show) are below-market deals
 const SHOW_DISCOUNT = 0.9; // packs/box are 10% off at the show
 
-// Draw weight by tier — biased toward chase cards (there's always something good).
-const TIER_WEIGHT = { common: 1, uncommon: 1.6, rare: 2.6, holo: 4, ultra: 6, secret: 8 };
+const SELLER_NAMES = [
+  'Vintage Vera', 'Holo Hank', 'Mint Marv', 'Gem-Mint Gigi', 'Binder Bob',
+  'Slab Sally', 'Toploader Tom', 'Rare Renee', 'First-Edition Fred', 'Chase Cho',
+];
+
+// Target tier mix for a seller's collection — ~80% hits (rare+), few non-hits.
+const SELLER_DIST = [
+  { tier: 'common', w: 10 }, { tier: 'uncommon', w: 10 },
+  { tier: 'rare', w: 25 }, { tier: 'holo', w: 25 }, { tier: 'ultra', w: 20 }, { tier: 'secret', w: 10 },
+];
+// Fallback preference when a rolled tier has no (unused) card — hits first.
+const FALLBACK_ORDER = ['secret', 'ultra', 'holo', 'rare', 'uncommon', 'common'];
 
 function priceOf(card) {
   return card.price || RARITY_FALLBACK[card.tier] || 0.5;
-}
-
-function weightedPick(pool) {
-  let total = 0;
-  for (const c of pool) total += TIER_WEIGHT[c.tier] || 1;
-  let r = Math.random() * total;
-  for (const c of pool) {
-    r -= TIER_WEIGHT[c.tier] || 1;
-    if (r <= 0) return c;
-  }
-  return pool[pool.length - 1];
 }
 
 function pickN(arr, n) {
@@ -34,30 +36,60 @@ function pickN(arr, n) {
   return out;
 }
 
+function availableIn(buckets, tier, used) {
+  return (buckets[tier] || []).filter(c => !used.has(c.uid));
+}
+
+/* Draw one unused card by the hit-weighted tier distribution, falling back to the
+   next available tier (hits first). Marks it used. Returns null if pool exhausted. */
+function drawSellerCard(buckets, used) {
+  let total = 0;
+  for (const d of SELLER_DIST) total += d.w;
+  let r = Math.random() * total, tier = SELLER_DIST[0].tier;
+  for (const d of SELLER_DIST) { r -= d.w; if (r <= 0) { tier = d.tier; break; } }
+  for (const t of [tier, ...FALLBACK_ORDER]) {
+    const av = availableIn(buckets, t, used);
+    if (av.length) {
+      const c = av[Math.floor(Math.random() * av.length)];
+      used.add(c.uid);
+      return c;
+    }
+  }
+  return null;
+}
+
 /* Generate a lineup. `pool` = real cards (from loaded sets); `sets` = the SETS
-   catalog. `now` seeds item ids. Returns { generatedAt, items }. */
+   catalog. `now` seeds item ids. Returns { generatedAt, items, sellers }. */
 export function generateStock(pool, sets, now) {
   let idx = 0;
   const id = () => `cs-${now}-${idx++}`;
   const items = [];
+  const sellers = [];
 
-  // --- singles (weighted, unique) ---
+  // Bucket the pool by tier for the hit-weighted draw.
+  const buckets = { common: [], uncommon: [], rare: [], holo: [], ultra: [], secret: [] };
+  for (const c of pool) if (buckets[c.tier]) buckets[c.tier].push(c);
   const used = new Set();
-  const singles = [];
-  let guard = 0;
-  while (singles.length < SINGLES_COUNT && guard++ < SINGLES_COUNT * 25 && pool.length) {
-    const c = weightedPick(pool);
-    if (used.has(c.uid)) continue;
-    used.add(c.uid);
-    singles.push(c);
+
+  // --- sellers, each with a hit-weighted collection of singles ---
+  for (const name of pickN(SELLER_NAMES, SELLERS_COUNT)) {
+    const sid = `s-${now}-${sellers.length}`;
+    sellers.push({ id: sid, name });
+    for (let k = 0; k < CARDS_PER_SELLER; k++) {
+      const c = drawSellerCard(buckets, used);
+      if (!c) break;
+      const list = +priceOf(c).toFixed(2);
+      items.push({ id: id(), kind: 'single', sellerId: sid, card: c, price: list, listPrice: list, deal: false });
+    }
   }
-  // The priciest couple become "deals" (chase bargains).
-  const dealUids = new Set([...singles].sort((a, b) => priceOf(b) - priceOf(a)).slice(0, DEALS).map(c => c.uid));
-  for (const c of singles) {
-    const list = +priceOf(c).toFixed(2);
-    const deal = dealUids.has(c.uid);
-    const discount = deal ? 0.4 + Math.random() * 0.25 : 0; // 40–65% off
-    items.push({ id: id(), kind: 'single', card: c, price: +(list * (1 - discount)).toFixed(2), listPrice: list, deal });
+  // A few priciest singles become "deals" (chase bargains).
+  const singles = items.filter(i => i.kind === 'single');
+  const dealUids = new Set([...singles].sort((a, b) => b.listPrice - a.listPrice).slice(0, DEALS).map(i => i.card.uid));
+  for (const it of singles) {
+    if (dealUids.has(it.card.uid)) {
+      it.deal = true;
+      it.price = +(it.listPrice * (1 - (0.4 + Math.random() * 0.25))).toFixed(2); // 40–65% off
+    }
   }
 
   // --- packs (paid sets, show discount) ---
@@ -74,5 +106,5 @@ export function generateStock(pool, sets, now) {
       packs: s.box.packs, price: +(s.box.price * SHOW_DISCOUNT).toFixed(2), listPrice: s.box.price, deal: false });
   }
 
-  return { generatedAt: now, items };
+  return { generatedAt: now, items, sellers };
 }
