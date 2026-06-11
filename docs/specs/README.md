@@ -31,4 +31,4 @@ Naming: `YYYY-MM-DD-slug.md`. Status: Draft → Approved → Built → Verified 
 | 2026-06-10 | [Usernames + LAN presence](2026-06-10-usernames-and-presence.md) | Shipped |
 | 2026-06-10 | [Release notes page](2026-06-10-release-notes.md) | Shipped |
 | 2026-06-10 | [Card Show — clock-aligned hourly stock](2026-06-10-card-show-hourly.md) | Shipped |
-| 2026-06-11 | [Card Show sellers + hit-weighted collections](2026-06-11-card-show-sellers.md) | Verified |
+| 2026-06-11 | [Card Show sellers + hit-weighted collections](2026-06-11-card-show-sellers.md) | Shipped |

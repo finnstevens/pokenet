@@ -2,7 +2,7 @@
 title: Card Show sellers + hit-weighted collections
 date: 2026-06-11
 slug: card-show-sellers
-status: Verified   # Draft → Approved → Built → Verified → Shipped
+status: Shipped   # Draft → Approved → Built → Verified → Shipped
 owner: finn
 ---
 
@@ -73,4 +73,4 @@ on entry; old-format fallback. `styles.css` — seller tiles/explore header.
 All acceptance criteria met.
 
 ## Changelog
-- `<pending>` — Card Show sellers + hit-weighted collections
+- `76a1cd8` — Card Show sellers + hit-weighted collections; deployed ✓
